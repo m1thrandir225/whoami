@@ -11,16 +11,19 @@ import (
 type Querier interface {
 	ActivateUser(ctx context.Context, id int64) error
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	CreateUserProfile(ctx context.Context, arg CreateUserProfileParams) (UserProfile, error)
 	DeactivateUser(ctx context.Context, id int64) error
 	GetUser(ctx context.Context, id int64) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
+	GetUserProfile(ctx context.Context, userID int64) (UserProfile, error)
 	GetUserWithProfile(ctx context.Context, id int64) (GetUserWithProfileRow, error)
 	MarkEmailVerified(ctx context.Context, id int64) error
 	UpdateLastLogin(ctx context.Context, id int64) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UpdateUserPrivacySettings(ctx context.Context, arg UpdateUserPrivacySettingsParams) error
+	UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) error
 }
 
 var _ Querier = (*Queries)(nil)
