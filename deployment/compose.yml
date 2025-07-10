@@ -3,16 +3,16 @@ services:
     image: postgres:alpine
     container_name: whoami-db
     environment:
-      POSTGRES_USER: ${}
-      POSTGRES_PASSWORD: ${}
-      POSTGRES_DB: ${}
-      PGPORT: ${}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      PGPORT: ${DB_PORT}
     volumes:
       - whoami-db:/var/lib/postgresql/data
     ports:
-      - "${}:${}"
+      - "${DB_PORT}:${DB_PORT}"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${} -d ${}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -20,9 +20,9 @@ services:
   whoami-redis:
     image: redis:7-alpine
     container_name: whoami-redis
-    command: --port ${}
+    command: --port ${REDIS_PORT}
     ports:
-      - "${}:${}"
+      - "${REDIS_PORT}:${REDIS_PORT}"
     restart: unless-stopped
   whoami:
     build:
@@ -34,5 +34,16 @@ services:
         condition: service_healthy
       whoami-redis:
         condition: service_healthy
+    environment:
+      HTTP_SERVER_ADDRESS: ${HTTP_SERVER_ADDRESS}
+      ENVIRONMENT: ${ENVIRONMENT}
+      DB_SOURCE: ${DB_SOURCE}
+      ACCESS_TOKEN_DURATION: ${ACCESS_TOKEN_DURATION}
+      REFRESH_TOKEN_DURATION: ${REFRESH_TOKEN_DURATION}
+      TOKEN_SYMMETRIC_KEY: ${TOKEN_SYMMETRIC_KEY}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
 volumes:
   whoami-db:
