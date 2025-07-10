@@ -31,6 +31,13 @@ sqlc:
 test:
 	go test -v -cover -short ./...
 server:
-	go run main.go
+	go run ./cmd/main.go
+
+.PHONY: help
+help:
+	@echo "Available commands:"
+	@grep -h -E '^[a-zA-Z_-]+:.*##' $(MAKEFILE_LIST) | sed -e 's/\(.*\):.*##[ \t]*\(.*\)/  \1|\2/' | column -t -s '|' | sort
+
+.DEFAULT_GOAL := help
 
 .PHONY: network postgres createdb dropdb migrateup migratedown  new_migration sqlc test server

@@ -1,0 +1,43 @@
+#Git
+.git/
+.gitignore
+
+#IDE
+.idea/
+.vscode/
+.editorconfig
+
+# Build Output
+bin/
+dist/
+build/
+output/
+
+# Local binaries
+*.test
+*.out
+*.bin
+
+# Configuration files
+.env
+
+# Logs
+.log
+
+# Temporary Files
+*~
+#*#
+.#*
+
+#Vendor
+vendor/
+
+# Docker
+compose.yml
+.dockerignore
+
+# Makefile
+Makefile
+
+# Markdown
+*.md
