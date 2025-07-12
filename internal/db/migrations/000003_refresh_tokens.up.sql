@@ -4,7 +4,7 @@ CREATE TABLE refresh_tokens (
     token_hash VARCHAR(255) NOT NULL UNIQUE,
     device_info JSONB,
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
     revoked_at TIMESTAMP WITH TIME ZONE,
     last_used_at TIMESTAMP WITH TIME ZONE
 );

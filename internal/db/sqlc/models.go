@@ -5,6 +5,8 @@
 package db
 
 import (
+	"time"
+
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -20,30 +22,30 @@ type RefreshToken struct {
 }
 
 type User struct {
-	ID                int64              `json:"id"`
-	Email             string             `json:"email"`
-	Username          string             `json:"username"`
-	PasswordHash      string             `json:"password_hash"`
-	EmailVerified     pgtype.Bool        `json:"email_verified"`
-	Active            pgtype.Bool        `json:"active"`
-	Role              pgtype.Text        `json:"role"`
-	PrivacySettings   []byte             `json:"privacy_settings"`
-	LastLoginAt       pgtype.Timestamptz `json:"last_login_at"`
-	PasswordChangedAt pgtype.Timestamptz `json:"password_changed_at"`
-	CreatedAt         pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+	ID                int64      `json:"id"`
+	Email             string     `json:"email"`
+	Username          string     `json:"username"`
+	PasswordHash      string     `json:"password_hash"`
+	EmailVerified     bool       `json:"email_verified"`
+	Active            bool       `json:"active"`
+	Role              string     `json:"role"`
+	PrivacySettings   []byte     `json:"privacy_settings"`
+	LastLoginAt       *time.Time `json:"last_login_at"`
+	PasswordChangedAt time.Time  `json:"password_changed_at"`
+	CreatedAt         time.Time  `json:"created_at"`
+	UpdatedAt         time.Time  `json:"updated_at"`
 }
 
 type UserProfile struct {
 	ID        int64              `json:"id"`
 	UserID    int64              `json:"user_id"`
-	FirstName pgtype.Text        `json:"first_name"`
-	LastName  pgtype.Text        `json:"last_name"`
-	Phone     pgtype.Text        `json:"phone"`
-	AvatarUrl pgtype.Text        `json:"avatar_url"`
-	Bio       pgtype.Text        `json:"bio"`
-	Timezone  pgtype.Text        `json:"timezone"`
-	Locale    pgtype.Text        `json:"locale"`
+	FirstName string             `json:"first_name"`
+	LastName  string             `json:"last_name"`
+	Phone     string             `json:"phone"`
+	AvatarUrl string             `json:"avatar_url"`
+	Bio       string             `json:"bio"`
+	Timezone  string             `json:"timezone"`
+	Locale    string             `json:"locale"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }

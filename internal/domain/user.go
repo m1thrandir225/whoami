@@ -23,3 +23,9 @@ type PrivacySettings struct {
 	ShowLastLogin    bool `json:"show_last_login"`
 	TwoFactorEnabled bool `json:"two_factor_enabled"`
 }
+
+type CreateUserRequest struct {
+	Email           string          `json:"email"`
+	Password        string          `json:"password"`
+	PrivacySettings PrivacySettings `json:"privacy_settings"`
+}

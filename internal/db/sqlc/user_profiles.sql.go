@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createUserProfile = `-- name: CreateUserProfile :one
@@ -34,14 +32,14 @@ INSERT INTO user_profiles (
 `
 
 type CreateUserProfileParams struct {
-	UserID    int64       `json:"user_id"`
-	FirstName pgtype.Text `json:"first_name"`
-	LastName  pgtype.Text `json:"last_name"`
-	Phone     pgtype.Text `json:"phone"`
-	AvatarUrl pgtype.Text `json:"avatar_url"`
-	Bio       pgtype.Text `json:"bio"`
-	Timezone  pgtype.Text `json:"timezone"`
-	Locale    pgtype.Text `json:"locale"`
+	UserID    int64  `json:"user_id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Phone     string `json:"phone"`
+	AvatarUrl string `json:"avatar_url"`
+	Bio       string `json:"bio"`
+	Timezone  string `json:"timezone"`
+	Locale    string `json:"locale"`
 }
 
 func (q *Queries) CreateUserProfile(ctx context.Context, arg CreateUserProfileParams) (UserProfile, error) {
@@ -102,14 +100,14 @@ WHERE user_id = $1
 `
 
 type UpdateUserProfileParams struct {
-	UserID    int64       `json:"user_id"`
-	FirstName pgtype.Text `json:"first_name"`
-	LastName  pgtype.Text `json:"last_name"`
-	Phone     pgtype.Text `json:"phone"`
-	AvatarUrl pgtype.Text `json:"avatar_url"`
-	Bio       pgtype.Text `json:"bio"`
-	Timezone  pgtype.Text `json:"timezone"`
-	Locale    pgtype.Text `json:"locale"`
+	UserID    int64  `json:"user_id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Phone     string `json:"phone"`
+	AvatarUrl string `json:"avatar_url"`
+	Bio       string `json:"bio"`
+	Timezone  string `json:"timezone"`
+	Locale    string `json:"locale"`
 }
 
 func (q *Queries) UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) error {

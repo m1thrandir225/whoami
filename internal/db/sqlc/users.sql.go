@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -40,11 +41,11 @@ VALUES (
 `
 
 type CreateUserParams struct {
-	Email           string      `json:"email"`
-	Username        string      `json:"username"`
-	PasswordHash    string      `json:"password_hash"`
-	Role            pgtype.Text `json:"role"`
-	PrivacySettings []byte      `json:"privacy_settings"`
+	Email           string `json:"email"`
+	Username        string `json:"username"`
+	PasswordHash    string `json:"password_hash"`
+	Role            string `json:"role"`
+	PrivacySettings []byte `json:"privacy_settings"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -168,20 +169,20 @@ WHERE u.id = $1
 `
 
 type GetUserWithProfileRow struct {
-	ID              int64              `json:"id"`
-	Email           string             `json:"email"`
-	Username        string             `json:"username"`
-	EmailVerified   pgtype.Bool        `json:"email_verified"`
-	Active          pgtype.Bool        `json:"active"`
-	Role            pgtype.Text        `json:"role"`
-	PrivacySettings []byte             `json:"privacy_settings"`
-	CreatedAt       pgtype.Timestamptz `json:"created_at"`
-	LastLoginAt     pgtype.Timestamptz `json:"last_login_at"`
-	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
-	FirstName       pgtype.Text        `json:"first_name"`
-	LastName        pgtype.Text        `json:"last_name"`
-	Phone           pgtype.Text        `json:"phone"`
-	Bio             pgtype.Text        `json:"bio"`
+	ID              int64       `json:"id"`
+	Email           string      `json:"email"`
+	Username        string      `json:"username"`
+	EmailVerified   bool        `json:"email_verified"`
+	Active          bool        `json:"active"`
+	Role            string      `json:"role"`
+	PrivacySettings []byte      `json:"privacy_settings"`
+	CreatedAt       time.Time   `json:"created_at"`
+	LastLoginAt     *time.Time  `json:"last_login_at"`
+	UpdatedAt       time.Time   `json:"updated_at"`
+	FirstName       pgtype.Text `json:"first_name"`
+	LastName        pgtype.Text `json:"last_name"`
+	Phone           pgtype.Text `json:"phone"`
+	Bio             string      `json:"bio"`
 }
 
 func (q *Queries) GetUserWithProfile(ctx context.Context, id int64) (GetUserWithProfileRow, error) {
