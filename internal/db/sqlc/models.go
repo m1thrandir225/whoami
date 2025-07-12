@@ -6,19 +6,17 @@ package db
 
 import (
 	"time"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type RefreshToken struct {
-	ID         int64              `json:"id"`
-	UserID     int64              `json:"user_id"`
-	TokenHash  string             `json:"token_hash"`
-	DeviceInfo []byte             `json:"device_info"`
-	ExpiresAt  pgtype.Timestamptz `json:"expires_at"`
-	CreatedAt  pgtype.Timestamptz `json:"created_at"`
-	RevokedAt  pgtype.Timestamptz `json:"revoked_at"`
-	LastUsedAt pgtype.Timestamptz `json:"last_used_at"`
+	ID         int64      `json:"id"`
+	UserID     int64      `json:"user_id"`
+	TokenHash  string     `json:"token_hash"`
+	DeviceInfo []byte     `json:"device_info"`
+	ExpiresAt  time.Time  `json:"expires_at"`
+	CreatedAt  time.Time  `json:"created_at"`
+	RevokedAt  *time.Time `json:"revoked_at"`
+	LastUsedAt *time.Time `json:"last_used_at"`
 }
 
 type User struct {
@@ -37,15 +35,15 @@ type User struct {
 }
 
 type UserProfile struct {
-	ID        int64              `json:"id"`
-	UserID    int64              `json:"user_id"`
-	FirstName string             `json:"first_name"`
-	LastName  string             `json:"last_name"`
-	Phone     string             `json:"phone"`
-	AvatarUrl string             `json:"avatar_url"`
-	Bio       string             `json:"bio"`
-	Timezone  string             `json:"timezone"`
-	Locale    string             `json:"locale"`
-	CreatedAt pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
+	ID        int64     `json:"id"`
+	UserID    int64     `json:"user_id"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
+	Phone     string    `json:"phone"`
+	AvatarUrl string    `json:"avatar_url"`
+	Bio       string    `json:"bio"`
+	Timezone  string    `json:"timezone"`
+	Locale    string    `json:"locale"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

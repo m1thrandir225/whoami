@@ -10,10 +10,10 @@ import (
 )
 
 type UserRepository interface {
-	CreateUser(ctx context.Context, req domain.CreateUserRequest) (*domain.User, error)
-	GetUserByEmail(ctx context.Context, email string) (*domain.User, error)
-	GetUserByID(ctx context.Context, id int64) (*domain.User, error)
-	UpdateUser(ctx context.Context, user *domain.User) error
+	CreateUser(ctx context.Context, req domain.CreateUserRequest) (*db.User, error)
+	GetUserByEmail(ctx context.Context, email string) (*db.User, error)
+	GetUserByID(ctx context.Context, id int64) (*db.User, error)
+	UpdateUser(ctx context.Context, user *db.User) error
 	UpdateUserPrivacySettings(ctx context.Context, id int64, privacySettings domain.PrivacySettings) error
 	DeactivateUser(ctx context.Context, id int64) error
 	ActivateUser(ctx context.Context, id int64) error
@@ -30,8 +30,8 @@ func NewUserRepository(store db.Store) UserRepository {
 	}
 }
 
-func (repo *userRepository) CreateUser(ctx context.Context, req domain.CreateUserRequest) (*domain.User, error) {
-	privacySettingsJson, err := json.Marshal(req.PrivacySettings)
+func (repo *userRepository) CreateUser(ctx context.Context, req domain.CreateUserRequest) (*db.User, error) {
+	privacySettingsJSON, err := json.Marshal(req.PrivacySettings)
 	if err != nil {
 		return nil, err
 	}
@@ -40,41 +40,29 @@ func (repo *userRepository) CreateUser(ctx context.Context, req domain.CreateUse
 		Email:           req.Email,
 		PasswordHash:    req.Password,
 		Role:            string(domain.RoleUser),
-		PrivacySettings: privacySettingsJson,
+		PrivacySettings: privacySettingsJSON,
 	})
 	if err != nil {
 		return nil, err
 	}
-	var privacySettings domain.PrivacySettings
-	err = json.Unmarshal(user.PrivacySettings, &privacySettings)
+
+	return &user, nil
+}
+
+func (repo *userRepository) GetUserByEmail(ctx context.Context, email string) (*db.User, error) {
+	user, err := repo.store.GetUserByEmail(ctx, email)
 	if err != nil {
 		return nil, err
 	}
 
-	return &domain.User{
-		ID:                user.ID,
-		Email:             user.Email,
-		EmailVerified:     user.EmailVerified,
-		Password:          user.PasswordHash,
-		PasswordChangedAt: user.PasswordChangedAt,
-		Role:              user.Role,
-		Active:            user.Active,
-		PrivacySettings:   privacySettings,
-		LastLoginAt:       user.LastLoginAt,
-		CreatedAt:         user.CreatedAt,
-		UpdatedAt:         user.UpdatedAt,
-	}, nil
+	return &user, nil
 }
 
-func (repo *userRepository) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
-	return &domain.User{}, nil
+func (repo *userRepository) GetUserByID(ctx context.Context, id int64) (*db.User, error) {
+	return &db.User{}, nil
 }
 
-func (repo *userRepository) GetUserByID(ctx context.Context, id int64) (*domain.User, error) {
-	return &domain.User{}, nil
-}
-
-func (repo *userRepository) UpdateUser(ctx context.Context, user *domain.User) error {
+func (repo *userRepository) UpdateUser(ctx context.Context, user *db.User) error {
 	return nil
 }
 

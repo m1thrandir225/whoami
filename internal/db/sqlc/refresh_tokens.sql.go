@@ -7,8 +7,7 @@ package db
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
+	"time"
 )
 
 const cleanupExpiredRefreshTokens = `-- name: CleanupExpiredRefreshTokens :exec
@@ -37,10 +36,10 @@ INSERT INTO refresh_tokens (
 `
 
 type CreateRefreshTokenParams struct {
-	UserID     int64              `json:"user_id"`
-	TokenHash  string             `json:"token_hash"`
-	DeviceInfo []byte             `json:"device_info"`
-	ExpiresAt  pgtype.Timestamptz `json:"expires_at"`
+	UserID     int64     `json:"user_id"`
+	TokenHash  string    `json:"token_hash"`
+	DeviceInfo []byte    `json:"device_info"`
+	ExpiresAt  time.Time `json:"expires_at"`
 }
 
 func (q *Queries) CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) (RefreshToken, error) {
