@@ -2,10 +2,7 @@
 package domain
 
 import (
-	"encoding/json"
 	"time"
-
-	db "github.com/m1thrandir225/whoami/internal/db/sqlc"
 )
 
 type User struct {
@@ -21,27 +18,6 @@ type User struct {
 	PasswordChangedAt time.Time       `json:"password_changed_at"`
 	UpdatedAt         time.Time       `json:"updated_at"`
 	CreatedAt         time.Time       `json:"created_at"`
-}
-
-func NewUserFromDBRow(dbRow db.User) (User, error) {
-	var privacySettings PrivacySettings
-	err := json.Unmarshal(dbRow.PrivacySettings, &privacySettings)
-	if err != nil {
-		return User{}, nil
-	}
-	return User{
-		ID:                dbRow.ID,
-		Email:             dbRow.Email,
-		EmailVerified:     dbRow.EmailVerified,
-		Password:          dbRow.PasswordHash,
-		PasswordChangedAt: dbRow.PasswordChangedAt,
-		Role:              dbRow.Role,
-		Active:            dbRow.Active,
-		PrivacySettings:   privacySettings,
-		LastLoginAt:       dbRow.LastLoginAt,
-		CreatedAt:         dbRow.CreatedAt,
-		UpdatedAt:         dbRow.UpdatedAt,
-	}, nil
 }
 
 type PrivacySettings struct {
