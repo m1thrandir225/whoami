@@ -16,3 +16,10 @@ type AccessToken struct {
 	ExpiresAt time.Time `json:"expires_at"`
 	UserID    int64     `json:"user_id"`
 }
+
+type CreateRefreshTokenAction struct {
+	UserID     int64
+	Token      string
+	DeviceInfo []byte
+	ExpiresAt  time.Time
+}

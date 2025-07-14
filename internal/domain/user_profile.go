@@ -16,12 +16,12 @@ type UserProfile struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type CreateUserProfileRequest struct {
+type CreateUserProfileAction struct {
 	UserID    int64
 	FirstName string
 	LastName  string
 	Phone     string
-	AvatarUrl string
+	AvatarURL string
 	Bio       string
 	Timezone  string
 	Locale    string

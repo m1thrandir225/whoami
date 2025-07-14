@@ -10,7 +10,7 @@ import (
 )
 
 type UserRepository interface {
-	CreateUser(ctx context.Context, req domain.CreateUserRequest) (*domain.User, error)
+	CreateUser(ctx context.Context, req domain.CreateUserAction) (*domain.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*domain.User, error)
 	GetUserByID(ctx context.Context, id int64) (*domain.User, error)
 	UpdateUser(ctx context.Context, user *domain.User) error
@@ -46,7 +46,7 @@ func (r *userRepository) toDomain(dbUser db.User, privacySettings domain.Privacy
 	}
 }
 
-func (repo *userRepository) CreateUser(ctx context.Context, req domain.CreateUserRequest) (*domain.User, error) {
+func (repo *userRepository) CreateUser(ctx context.Context, req domain.CreateUserAction) (*domain.User, error) {
 	privacySettingsJSON, err := json.Marshal(req.PrivacySettings)
 	if err != nil {
 		return nil, err
@@ -58,7 +58,6 @@ func (repo *userRepository) CreateUser(ctx context.Context, req domain.CreateUse
 		Role:            string(domain.RoleUser),
 		PrivacySettings: privacySettingsJSON,
 	})
-
 	if err != nil {
 		return nil, err
 	}
