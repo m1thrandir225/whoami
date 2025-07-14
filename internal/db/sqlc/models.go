@@ -5,8 +5,95 @@
 package db
 
 import (
+	"net/netip"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type AccountLockout struct {
+	ID          int64       `json:"id"`
+	UserID      int64       `json:"user_id"`
+	IpAddress   *netip.Addr `json:"ip_address"`
+	LockoutType string      `json:"lockout_type"`
+	ExpiresAt   time.Time   `json:"expires_at"`
+	CreatedAt   *time.Time  `json:"created_at"`
+}
+
+type AuditLog struct {
+	ID           int64       `json:"id"`
+	UserID       pgtype.Int8 `json:"user_id"`
+	Action       string      `json:"action"`
+	ResourceType pgtype.Text `json:"resource_type"`
+	ResourceID   pgtype.Int8 `json:"resource_id"`
+	IpAddress    *netip.Addr `json:"ip_address"`
+	UserAgent    string      `json:"user_agent"`
+	Details      []byte      `json:"details"`
+	CreatedAt    *time.Time  `json:"created_at"`
+}
+
+type DataExport struct {
+	ID          int64       `json:"id"`
+	UserID      int64       `json:"user_id"`
+	Status      pgtype.Text `json:"status"`
+	ExportType  string      `json:"export_type"`
+	FilePath    pgtype.Text `json:"file_path"`
+	ExpiresAt   time.Time   `json:"expires_at"`
+	CreatedAt   *time.Time  `json:"created_at"`
+	CompletedAt *time.Time  `json:"completed_at"`
+}
+
+type EmailVerification struct {
+	ID        int64      `json:"id"`
+	UserID    int64      `json:"user_id"`
+	TokenHash string     `json:"token_hash"`
+	ExpiresAt time.Time  `json:"expires_at"`
+	CreatedAt *time.Time `json:"created_at"`
+	UsedAt    *time.Time `json:"used_at"`
+}
+
+type LoginAttempt struct {
+	ID            int64       `json:"id"`
+	UserID        pgtype.Int8 `json:"user_id"`
+	Email         string      `json:"email"`
+	IpAddress     netip.Addr  `json:"ip_address"`
+	UserAgent     string      `json:"user_agent"`
+	Success       bool        `json:"success"`
+	FailureReason pgtype.Text `json:"failure_reason"`
+	CreatedAt     *time.Time  `json:"created_at"`
+}
+
+type OauthAccount struct {
+	ID               int64       `json:"id"`
+	UserID           int64       `json:"user_id"`
+	Provider         string      `json:"provider"`
+	ProviderUserID   string      `json:"provider_user_id"`
+	ProviderUsername pgtype.Text `json:"provider_username"`
+	ProviderEmail    pgtype.Text `json:"provider_email"`
+	AccessToken      string      `json:"access_token"`
+	RefreshToken     string      `json:"refresh_token"`
+	TokenExpiresAt   *time.Time  `json:"token_expires_at"`
+	CreatedAt        *time.Time  `json:"created_at"`
+	UpdatedAt        *time.Time  `json:"updated_at"`
+}
+
+type PasswordHistory struct {
+	ID           int64      `json:"id"`
+	UserID       int64      `json:"user_id"`
+	PasswordHash string     `json:"password_hash"`
+	CreatedAt    *time.Time `json:"created_at"`
+}
+
+type PasswordReset struct {
+	ID         int64       `json:"id"`
+	UserID     int64       `json:"user_id"`
+	TokenHash  string      `json:"token_hash"`
+	HotpSecret string      `json:"hotp_secret"`
+	Counter    pgtype.Int8 `json:"counter"`
+	ExpiresAt  time.Time   `json:"expires_at"`
+	CreatedAt  *time.Time  `json:"created_at"`
+	UsedAt     *time.Time  `json:"used_at"`
+}
 
 type RefreshToken struct {
 	ID         int64      `json:"id"`
@@ -17,6 +104,19 @@ type RefreshToken struct {
 	CreatedAt  time.Time  `json:"created_at"`
 	RevokedAt  *time.Time `json:"revoked_at"`
 	LastUsedAt *time.Time `json:"last_used_at"`
+}
+
+type SuspiciousActivity struct {
+	ID           int64       `json:"id"`
+	UserID       pgtype.Int8 `json:"user_id"`
+	ActivityType string      `json:"activity_type"`
+	IpAddress    netip.Addr  `json:"ip_address"`
+	UserAgent    string      `json:"user_agent"`
+	Description  string      `json:"description"`
+	Metadata     []byte      `json:"metadata"`
+	Severity     pgtype.Text `json:"severity"`
+	Resolved     pgtype.Bool `json:"resolved"`
+	CreatedAt    *time.Time  `json:"created_at"`
 }
 
 type User struct {
@@ -32,6 +132,19 @@ type User struct {
 	PasswordChangedAt time.Time  `json:"password_changed_at"`
 	CreatedAt         time.Time  `json:"created_at"`
 	UpdatedAt         time.Time  `json:"updated_at"`
+}
+
+type UserDevice struct {
+	ID         int64       `json:"id"`
+	UserID     int64       `json:"user_id"`
+	DeviceID   string      `json:"device_id"`
+	DeviceName pgtype.Text `json:"device_name"`
+	DeviceType pgtype.Text `json:"device_type"`
+	UserAgent  string      `json:"user_agent"`
+	IpAddress  *netip.Addr `json:"ip_address"`
+	Trusted    pgtype.Bool `json:"trusted"`
+	LastUsedAt *time.Time  `json:"last_used_at"`
+	CreatedAt  *time.Time  `json:"created_at"`
 }
 
 type UserProfile struct {
