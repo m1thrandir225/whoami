@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"errors"
+	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	db "github.com/m1thrandir225/whoami/internal/db/sqlc"
 	"github.com/m1thrandir225/whoami/internal/handlers"
@@ -10,15 +12,22 @@ import (
 	"github.com/m1thrandir225/whoami/internal/services"
 	"github.com/m1thrandir225/whoami/internal/util"
 	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+
 	config, err := util.LoadConfig("..")
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
-	connPool, err := pgxpool.New(context.Background(), config.DBSource)
+	connPool, err := pgxpool.New(ctx, config.DBSource)
 	if err != nil {
 		log.Fatalf("Could not connect to database: %v", err)
 	}
@@ -31,8 +40,39 @@ func main() {
 		log.Fatalf("Could not create tokenMaker: %v", err)
 	}
 
+	/*
+	* Users
+	 */
 	userRepository := repositories.NewUserRepository(dbStore)
 	userService := services.NewUserService(userRepository)
 
-	httpHandler := handlers.NewHTTPHandler(userService, tokenMaker, config)
+	handler := handlers.NewHTTPHandler(userService, tokenMaker, config)
+
+	gin.SetMode(gin.ReleaseMode)
+	router := gin.Default()
+
+	router.Use(gin.Logger())
+	router.Use(gin.Recovery())
+
+	handlers.SetupRoutes(router, handler)
+
+	httpServer := &http.Server{
+		Addr:    config.HTTPServerAddress,
+		Handler: router,
+	}
+
+	go func() {
+		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("listen: %s\n", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutdown Server ...")
+	cancel()
+
+	_, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer shutdownCancel()
 }
