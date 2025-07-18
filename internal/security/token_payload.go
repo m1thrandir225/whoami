@@ -9,7 +9,7 @@ import (
 
 type Payload struct {
 	ID        uuid.UUID `json:"id"`
-	UserID    uuid.UUID `json:"user_id"`
+	UserID    int64     `json:"user_id"`
 	IssuedAt  time.Time `json:"issued_at"`
 	ExpiredAt time.Time `json:"expired_at"`
 }
@@ -19,7 +19,7 @@ var (
 	ErrInvalidToken = errors.New("token is invalid")
 )
 
-func NewPayload(userID uuid.UUID, duration time.Duration) (*Payload, error) {
+func NewPayload(userID int64, duration time.Duration) (*Payload, error) {
 	tokenID, err := uuid.NewV7()
 	if err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ func NewPayload(userID uuid.UUID, duration time.Duration) (*Payload, error) {
 	return payload, nil
 }
 
-func (payload *Payload) Valid() error {
+func (payload *Payload) IsValid() error {
 	if time.Now().After(payload.ExpiredAt) {
 		return ErrExpiredToken
 	}

@@ -1,8 +1,14 @@
 // Package handlers defines HTTP Handlers using Gin
 package handlers
 
-import "github.com/m1thrandir225/whoami/internal/services"
+import (
+	"github.com/m1thrandir225/whoami/internal/security"
+	"github.com/m1thrandir225/whoami/internal/services"
+	"github.com/m1thrandir225/whoami/internal/util"
+)
 
 type HTTPHandler struct {
-	userService *services.UserService
+	userService services.UserService
+	tokenMaker  security.TokenMaker
+	config      *util.Config
 }

@@ -1,12 +1,11 @@
 package handlers
 
 import (
-	"net/http"
-	"strconv"
-
 	"github.com/gin-gonic/gin"
 	"github.com/m1thrandir225/whoami/internal/domain"
 	"github.com/m1thrandir225/whoami/internal/util"
+	"net/http"
+	"strconv"
 )
 
 type registerRequest struct {
@@ -25,6 +24,12 @@ type registerResponse struct {
 type loginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type loginResponse struct {
+	User         domain.User `json:"user"`
+	AccessToken  string      `json:"access_token"`
+	RefreshToken string      `json:"refresh_token"`
 }
 
 type updateUserRequest struct {
@@ -56,9 +61,15 @@ func (h *HTTPHandler) Register(ctx *gin.Context) {
 		return
 	}
 
-	// TODO: return response with tokens
+	accessToken, _, err := h.tokenMaker.CreateToken(user.ID, h.config.AccessTokenDuration)
+	refreshToken, _, err := h.tokenMaker.CreateToken(user.ID, h.config.RefreshTokenDuration)
 
-	ctx.JSON(http.StatusOK, user)
+	response := registerResponse{
+		User:         *user,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}
+	ctx.JSON(http.StatusOK, response)
 }
 
 func (h *HTTPHandler) Login(ctx *gin.Context) {
@@ -81,9 +92,16 @@ func (h *HTTPHandler) Login(ctx *gin.Context) {
 		return
 	}
 
-	// TODO: return response with tokens
+	accessToken, _, err := h.tokenMaker.CreateToken(user.ID, h.config.AccessTokenDuration)
+	refreshToken, _, err := h.tokenMaker.CreateToken(user.ID, h.config.RefreshTokenDuration)
 
-	ctx.JSON(http.StatusOK, user)
+	response := loginResponse{
+		User:         *user,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}
+
+	ctx.JSON(http.StatusOK, response)
 }
 
 func (h *HTTPHandler) GetCurrentUser(ctx *gin.Context) {
@@ -190,10 +208,12 @@ func (h *HTTPHandler) UpdateUser(ctx *gin.Context) {
 
 func (h *HTTPHandler) UpdateUserPrivacySettings(ctx *gin.Context) {
 	var uriData UriID
+
 	if err := ctx.ShouldBindUri(&uriData); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+
 	var requestData domain.PrivacySettings
 
 	if err := ctx.ShouldBindJSON(&requestData); err != nil {

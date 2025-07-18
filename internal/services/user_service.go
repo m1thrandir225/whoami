@@ -8,44 +8,55 @@ import (
 	"github.com/m1thrandir225/whoami/internal/repositories"
 )
 
-type UserService struct {
+type UserService interface {
+	CreateUser(ctx context.Context, req domain.CreateUserAction) (*domain.User, error)
+	GetUserByEmail(ctx context.Context, email string) (*domain.User, error)
+	GetUserByID(ctx context.Context, id int64) (*domain.User, error)
+	ActivateUser(ctx context.Context, id int64) error
+	DeactivateUser(ctx context.Context, id int64) error
+	UpdateUser(ctx context.Context, user domain.User) error
+	UpdateUserPrivacySettings(ctx context.Context, id int64, privacySettings domain.PrivacySettings) error
+	UpdateLastLogin(ctx context.Context, id int64) error
+}
+
+type userService struct {
 	repository repositories.UserRepository
 }
 
-func NewUserService(repo repositories.UserRepository) *UserService {
-	return &UserService{
+func NewUserService(repo repositories.UserRepository) UserService {
+	return &userService{
 		repository: repo,
 	}
 }
 
-func (s *UserService) CreateUser(ctx context.Context, req domain.CreateUserAction) (*domain.User, error) {
+func (s *userService) CreateUser(ctx context.Context, req domain.CreateUserAction) (*domain.User, error) {
 	return s.repository.CreateUser(ctx, req)
 }
 
-func (s *UserService) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
+func (s *userService) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
 	return s.repository.GetUserByEmail(ctx, email)
 }
 
-func (s *UserService) GetUserByID(ctx context.Context, id int64) (*domain.User, error) {
+func (s *userService) GetUserByID(ctx context.Context, id int64) (*domain.User, error) {
 	return s.repository.GetUserByID(ctx, id)
 }
 
-func (s *UserService) ActivateUser(ctx context.Context, id int64) error {
+func (s *userService) ActivateUser(ctx context.Context, id int64) error {
 	return s.repository.ActivateUser(ctx, id)
 }
 
-func (s *UserService) DeactivateUser(ctx context.Context, id int64) error {
+func (s *userService) DeactivateUser(ctx context.Context, id int64) error {
 	return s.repository.DeactivateUser(ctx, id)
 }
 
-func (s *UserService) UpdateUser(ctx context.Context, user domain.User) error {
+func (s *userService) UpdateUser(ctx context.Context, user domain.User) error {
 	return s.repository.UpdateUser(ctx, &user)
 }
 
-func (s *UserService) UpdateUserPrivacySettings(ctx context.Context, id int64, privacySettings domain.PrivacySettings) error {
+func (s *userService) UpdateUserPrivacySettings(ctx context.Context, id int64, privacySettings domain.PrivacySettings) error {
 	return s.repository.UpdateUserPrivacySettings(ctx, id, privacySettings)
 }
 
-func (s *UserService) UpdateLastLogin(ctx context.Context, id int64) error {
+func (s *userService) UpdateLastLogin(ctx context.Context, id int64) error {
 	return s.repository.UpdateLastLogin(ctx, id)
 }
