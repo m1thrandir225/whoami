@@ -12,3 +12,15 @@ type HTTPHandler struct {
 	tokenMaker  security.TokenMaker
 	config      *util.Config
 }
+
+func NewHTTPHandler(
+	userService services.UserService,
+	tokenMaker security.TokenMaker,
+	config util.Config,
+) *HTTPHandler {
+	return &HTTPHandler{
+		userService: userService,
+		tokenMaker:  tokenMaker,
+		config:      &config,
+	}
+}
