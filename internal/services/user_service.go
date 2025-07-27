@@ -20,7 +20,8 @@ type UserService interface {
 }
 
 type userService struct {
-	repository repositories.UserRepository
+	repository        repositories.UserRepository
+	profileRepository repositories.UserProfilesRepository
 }
 
 func NewUserService(repo repositories.UserRepository) UserService {

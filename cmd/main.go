@@ -3,6 +3,13 @@ package main
 import (
 	"context"
 	"errors"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	db "github.com/m1thrandir225/whoami/internal/db/sqlc"
@@ -11,12 +18,6 @@ import (
 	"github.com/m1thrandir225/whoami/internal/security"
 	"github.com/m1thrandir225/whoami/internal/services"
 	"github.com/m1thrandir225/whoami/internal/util"
-	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 func main() {
@@ -45,7 +46,6 @@ func main() {
 	 */
 	userRepository := repositories.NewUserRepository(dbStore)
 	userService := services.NewUserService(userRepository)
-
 	handler := handlers.NewHTTPHandler(userService, tokenMaker, config)
 
 	gin.SetMode(gin.ReleaseMode)
