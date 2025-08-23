@@ -6,7 +6,6 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
-      PGPORT: ${DB_PORT}
     volumes:
       - whoami-db:/var/lib/postgresql/data
     ports:
@@ -23,6 +22,11 @@ services:
     command: --port ${REDIS_PORT}
     ports:
       - "${REDIS_PORT}:${REDIS_PORT}"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "${REDIS_PORT}", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
   whoami:
     build:
@@ -36,7 +40,11 @@ services:
         condition: service_healthy
     environment:
       HTTP_SERVER_ADDRESS: ${HTTP_SERVER_ADDRESS}
+      HTTP_PORT: ${HTTP_PORT}
+      REDIS_URL: ${REDIS_URL}
+      REDIS_PORT: ${REDIS_PORT}
       ENVIRONMENT: ${ENVIRONMENT}
+      LOG_LEVEL: ${LOG_LEVEL}
       DB_SOURCE: ${DB_SOURCE}
       ACCESS_TOKEN_DURATION: ${ACCESS_TOKEN_DURATION}
       REFRESH_TOKEN_DURATION: ${REFRESH_TOKEN_DURATION}

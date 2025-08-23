@@ -13,8 +13,11 @@ import (
 
 type Config struct {
 	HTTPServerAddress    string        `mapstructure:"HTTP_SERVER_ADDRESS"`
+	HTTPPort             int           `mapstructure:"HTTP_PORT"`
 	Environment          string        `mapstructure:"ENVIRONMENT"`
+	LogLevel             string        `mapstructure:"LOG_LEVEL"`
 	DBSource             string        `mapstructure:"DB_SOURCE"`
+	RedisURL             string        `mapstructure:"REDIS_URL"`
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
 	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
@@ -46,7 +49,10 @@ func LoadConfig(path string) (config Config, err error) {
 	}
 
 	viper.BindEnv("ENVIRONMENT")
+	viper.BindEnv("LOG_LEVEL")
 	viper.BindEnv("HTTP_SERVER_ADDRESS")
+	viper.BindEnv("HTTP_PORT")
+	viper.BindEnv("REDIS_URL")
 	viper.BindEnv("DB_SOURCE")
 	viper.BindEnv("TESTING_DB_SOURCE")
 	viper.BindEnv("ACCESS_TOKEN_DURATION")
@@ -59,7 +65,7 @@ func LoadConfig(path string) (config Config, err error) {
 
 	err = viper.Unmarshal(&config)
 	if err != nil {
-		log.Fatal("Error unmarshalling config")
+		log.Fatalf("Error unmarshalling config: %v", err)
 	}
 	return
 }
