@@ -35,3 +35,9 @@ func errorResponse(err error) gin.H {
 func messageResponse(message string) gin.H {
 	return gin.H{"message": message}
 }
+
+type healthResponse struct {
+	Status    string            `json:"status"`
+	Services  map[string]string `json:"services"`
+	Timestamp string            `json:"timestamp"`
+}

@@ -35,7 +35,15 @@ func (h *HTTPHandler) Register(ctx *gin.Context) {
 	}
 
 	accessToken, _, err := h.tokenMaker.CreateToken(user.ID, h.config.AccessTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
 	refreshToken, _, err := h.tokenMaker.CreateToken(user.ID, h.config.RefreshTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
 
 	response := registerResponse{
 		User:         *user,

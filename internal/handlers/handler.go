@@ -11,16 +11,19 @@ type HTTPHandler struct {
 	userService services.UserService
 	tokenMaker  security.TokenMaker
 	config      *util.Config
+	rateLimiter *security.RateLimiter
 }
 
 func NewHTTPHandler(
 	userService services.UserService,
 	tokenMaker security.TokenMaker,
+	rateLimiter *security.RateLimiter,
 	config util.Config,
 ) *HTTPHandler {
 	return &HTTPHandler{
 		userService: userService,
 		tokenMaker:  tokenMaker,
 		config:      &config,
+		rateLimiter: rateLimiter,
 	}
 }

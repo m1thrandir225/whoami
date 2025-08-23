@@ -32,8 +32,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not connect to database: %v", err)
 	}
-
 	defer connPool.Close()
+
+	rateLimiter, err := security.NewRateLimiter(config.RedisURL)
+	if err != nil {
+		log.Fatalf("Could not create rate limiter: %v", err)
+	}
+	defer rateLimiter.Close()
 
 	dbStore := db.NewStore(connPool)
 	tokenMaker, err := security.NewPasetoMaker(config.TokenSymmetricKey)
@@ -46,7 +51,7 @@ func main() {
 	 */
 	userRepository := repositories.NewUserRepository(dbStore)
 	userService := services.NewUserService(userRepository)
-	handler := handlers.NewHTTPHandler(userService, tokenMaker, config)
+	handler := handlers.NewHTTPHandler(userService, tokenMaker, rateLimiter, config)
 
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()

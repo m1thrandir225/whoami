@@ -1,22 +1,29 @@
 package handlers
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/m1thrandir225/whoami/internal/security"
+)
 
 func SetupRoutes(router *gin.Engine, handler *HTTPHandler) {
+	router.GET("/health", handler.HealthCheck)
+
 	apiV1 := router.Group("/api/v1")
 	{
-		apiV1.POST("/register", handler.Register)
-		apiV1.POST("/login", handler.Login)
+		apiV1.POST("/register",
+			handler.rateLimiter.RateLimitMiddleware(security.RegistrationRateLimit),
+			handler.Register)
+		apiV1.POST("/login",
+			handler.rateLimiter.RateLimitMiddleware(security.AuthRateLimit),
+			handler.Login)
 
 		protected := apiV1.Group("/")
 		protected.Use(AuthMiddleware(handler.tokenMaker))
+		protected.Use(handler.rateLimiter.UserRateLimitMiddleware(security.DefaultRateLimit))
 		{
 			protected.GET("/me", handler.GetCurrentUser)
 			protected.POST("/logout", handler.Logout)
 			protected.POST("/refresh", handler.RefreshToken)
-			protected.POST("/verify-email", handler.VerifyEmail)
-			protected.POST("/resend-verification-email", handler.ResendVerificationEmail)
-			protected.POST("/update-password", handler.UpdatePassword)
 
 			user := protected.Group("/user")
 			{
@@ -24,7 +31,15 @@ func SetupRoutes(router *gin.Engine, handler *HTTPHandler) {
 				user.POST("/activate", handler.ActivateUser)
 				user.PUT("/:id", handler.UpdateUser)
 				user.PUT("/:id/privacy-settings", handler.UpdateUserPrivacySettings)
+				user.POST("/update-password", handler.UpdatePassword)
 			}
+		}
+
+		email := apiV1.Group("/email")
+		email.Use(handler.rateLimiter.RateLimitMiddleware(security.PasswordResetRateLimit))
+		{
+			email.POST("/verify", handler.VerifyEmail)
+			email.POST("/resend", handler.ResendVerificationEmail)
 		}
 	}
 }
