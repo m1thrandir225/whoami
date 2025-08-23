@@ -28,16 +28,30 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+  whoami-migrate:
+    build:
+      context: ../
+      dockerfile: deployment/migrate/Dockerfile
+    depends_on:
+      whoami-db:
+        condition: service_healthy
+    volumes:
+      - ../internal/db/migrations:/migrations
+    environment:
+      MIGRATE_DB_URL_MIGRATE: "${DB_URL_MIGRATE}"
+    command: ["-path", "/migrations", "-database", "${DB_URL_MIGRATE}", "up"]
   whoami:
     build:
       context: ../
-      dockerfile: deployment/Dockerfile
+      dockerfile: deployment/whoami/Dockerfile
     container_name: whoami
     depends_on:
       whoami-db:
         condition: service_healthy
       whoami-redis:
         condition: service_healthy
+      whoami-migrate:
+        condition: service_completed_successfully
     environment:
       HTTP_SERVER_ADDRESS: ${HTTP_SERVER_ADDRESS}
       HTTP_PORT: ${HTTP_PORT}
