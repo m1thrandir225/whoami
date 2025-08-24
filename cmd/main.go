@@ -15,6 +15,7 @@ import (
 	"github.com/m1thrandir225/whoami/cmd/pkg/redis"
 	db "github.com/m1thrandir225/whoami/internal/db/sqlc"
 	"github.com/m1thrandir225/whoami/internal/handlers"
+	"github.com/m1thrandir225/whoami/internal/oauth"
 	"github.com/m1thrandir225/whoami/internal/repositories"
 	"github.com/m1thrandir225/whoami/internal/security"
 	"github.com/m1thrandir225/whoami/internal/services"
@@ -85,6 +86,29 @@ func main() {
 	auditLogsRepository := repositories.NewAuditLogsRepository(dbStore)
 	userDevicesRepository := repositories.NewUserDevicesRepository(dbStore)
 	dataExportsRepository := repositories.NewDataExportsRepository(dbStore)
+	oauthAccountsRepository := repositories.NewOAuthAccountsRepository(dbStore)
+
+	/*
+	* OAuth Providers
+	 */
+	googleProvider := oauth.NewGoogleProvider(oauth.Config{
+		ClientID:     config.GoogleOAuthClientID,
+		ClientSecret: config.GoogleOAuthClientSecret,
+		RedirectURL:  config.GoogleOAuthRedirectURL,
+		Scopes:       []string{"openid", "email", "profile"},
+	})
+
+	githubProvider := oauth.NewGitHubProvider(oauth.Config{
+		ClientID:     config.GitHubOAuthClientID,
+		ClientSecret: config.GitHubOAuthClientSecret,
+		RedirectURL:  config.GitHubOAuthRedirectURL,
+		Scopes:       []string{"read:user", "user:email"},
+	})
+
+	oauthProviders := handlers.OAuthProviders{
+		Google: googleProvider,
+		GitHub: githubProvider,
+	}
 
 	/*
 	* Services
@@ -122,6 +146,10 @@ func main() {
 		loginAttemptsRepository,
 		"./exports", // Export directory
 	)
+	oauthService := services.NewOAuthService(
+		oauthAccountsRepository,
+		userRepository,
+	)
 
 	/**
 	* Create HTTP handler
@@ -135,6 +163,8 @@ func main() {
 		auditService,
 		userDevicesService,
 		dataExportsService,
+		oauthService,
+		oauthProviders,
 		tokenMaker,
 		tokenBlacklist,
 		sessionService,
@@ -151,7 +181,7 @@ func main() {
 	handlers.SetupRoutes(router, handler)
 
 	httpServer := &http.Server{
-		Addr:    config.HTTPServerAddress,
+		Addr:    ":8080",
 		Handler: router,
 	}
 

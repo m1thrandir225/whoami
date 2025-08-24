@@ -52,10 +52,15 @@ func (repo *userRepository) CreateUser(ctx context.Context, req domain.CreateUse
 	if err != nil {
 		return nil, err
 	}
+	username := ""
+	if req.Username != nil {
+		username = *req.Username
+	}
 
 	user, err := repo.store.CreateUser(ctx, db.CreateUserParams{
 		Email:           req.Email,
 		PasswordHash:    req.Password,
+		Username:        username,
 		Role:            string(domain.RoleUser),
 		PrivacySettings: privacySettingsJSON,
 	})

@@ -2,10 +2,16 @@
 package handlers
 
 import (
+	"github.com/m1thrandir225/whoami/internal/oauth"
 	"github.com/m1thrandir225/whoami/internal/security"
 	"github.com/m1thrandir225/whoami/internal/services"
 	"github.com/m1thrandir225/whoami/internal/util"
 )
+
+type OAuthProviders struct {
+	Google *oauth.GoogleProvider
+	GitHub *oauth.GitHubProvider
+}
 
 type HTTPHandler struct {
 	userService             services.UserService
@@ -16,6 +22,8 @@ type HTTPHandler struct {
 	auditService            services.AuditService
 	userDevicesService      services.UserDevicesService
 	dataExportsService      services.DataExportsService
+	oauthService            services.OAuthService
+	oauthProviders          OAuthProviders
 	tokenMaker              security.TokenMaker
 	tokenBlacklist          security.TokenBlacklist
 	sessionService          services.SessionService
@@ -32,6 +40,8 @@ func NewHTTPHandler(
 	auditService services.AuditService,
 	userDevicesService services.UserDevicesService,
 	dataExportsService services.DataExportsService,
+	oauthService services.OAuthService,
+	oauthProviders OAuthProviders,
 	tokenMaker security.TokenMaker,
 	tokenBlacklist security.TokenBlacklist,
 	sessionService services.SessionService,
@@ -47,6 +57,8 @@ func NewHTTPHandler(
 		auditService:            auditService,
 		userDevicesService:      userDevicesService,
 		dataExportsService:      dataExportsService,
+		oauthService:            oauthService,
+		oauthProviders:          oauthProviders,
 		tokenMaker:              tokenMaker,
 		tokenBlacklist:          tokenBlacklist,
 		sessionService:          sessionService,

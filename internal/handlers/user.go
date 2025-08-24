@@ -35,7 +35,8 @@ func (h *HTTPHandler) Register(ctx *gin.Context) {
 
 	user, err := h.userService.CreateUser(ctx, domain.CreateUserAction{
 		Email:           requestData.Email,
-		PrivacySettings: *requestData.PrivacySettings,
+		Username:        requestData.Username,
+		PrivacySettings: requestData.PrivacySettings,
 		Password:        passwordHash,
 	})
 

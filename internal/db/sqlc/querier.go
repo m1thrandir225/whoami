@@ -20,6 +20,7 @@ type Querier interface {
 	CreateDataExport(ctx context.Context, arg CreateDataExportParams) (DataExport, error)
 	CreateEmailVerification(ctx context.Context, arg CreateEmailVerificationParams) (EmailVerification, error)
 	CreateLoginAttempt(ctx context.Context, arg CreateLoginAttemptParams) (LoginAttempt, error)
+	CreateOAuthAccount(ctx context.Context, arg CreateOAuthAccountParams) (OauthAccount, error)
 	CreatePasswordHistory(ctx context.Context, arg CreatePasswordHistoryParams) (PasswordHistory, error)
 	CreatePasswordReset(ctx context.Context, arg CreatePasswordResetParams) (PasswordReset, error)
 	CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) (RefreshToken, error)
@@ -33,6 +34,8 @@ type Querier interface {
 	DeleteDataExport(ctx context.Context, arg DeleteDataExportParams) error
 	DeleteExpiredDataExports(ctx context.Context) error
 	DeleteExpiredLockouts(ctx context.Context) error
+	DeleteOAuthAccount(ctx context.Context, arg DeleteOAuthAccountParams) error
+	DeleteOAuthAccountByProvider(ctx context.Context, arg DeleteOAuthAccountByProviderParams) error
 	DeleteOldAuditLogs(ctx context.Context) error
 	DeleteOldLoginAttempts(ctx context.Context) error
 	DeleteOldPasswordHistory(ctx context.Context, userID int64) error
@@ -58,6 +61,10 @@ type Querier interface {
 	GetLoginAttemptsByEmail(ctx context.Context, arg GetLoginAttemptsByEmailParams) ([]LoginAttempt, error)
 	GetLoginAttemptsByIP(ctx context.Context, arg GetLoginAttemptsByIPParams) ([]LoginAttempt, error)
 	GetLoginAttemptsByUserID(ctx context.Context, arg GetLoginAttemptsByUserIDParams) ([]LoginAttempt, error)
+	GetOAuthAccountByEmail(ctx context.Context, arg GetOAuthAccountByEmailParams) (OauthAccount, error)
+	GetOAuthAccountByID(ctx context.Context, arg GetOAuthAccountByIDParams) (OauthAccount, error)
+	GetOAuthAccountByProvider(ctx context.Context, arg GetOAuthAccountByProviderParams) (OauthAccount, error)
+	GetOAuthAccountsByUserID(ctx context.Context, userID int64) ([]OauthAccount, error)
 	GetPasswordHistoryByUserID(ctx context.Context, arg GetPasswordHistoryByUserIDParams) ([]PasswordHistory, error)
 	GetPasswordResetByToken(ctx context.Context, tokenHash string) (PasswordReset, error)
 	GetPendingDataExports(ctx context.Context) ([]DataExport, error)
@@ -91,6 +98,8 @@ type Querier interface {
 	UpdateDataExportFile(ctx context.Context, arg UpdateDataExportFileParams) (DataExport, error)
 	UpdateDataExportStatus(ctx context.Context, arg UpdateDataExportStatusParams) (DataExport, error)
 	UpdateLastLogin(ctx context.Context, id int64) error
+	UpdateOAuthAccount(ctx context.Context, arg UpdateOAuthAccountParams) (OauthAccount, error)
+	UpdateOAuthTokens(ctx context.Context, arg UpdateOAuthTokensParams) (OauthAccount, error)
 	UpdateRefreshTokenLastUsed(ctx context.Context, tokenHash string) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 	UpdateUserDevice(ctx context.Context, arg UpdateUserDeviceParams) (UserDevice, error)

@@ -52,6 +52,7 @@ services:
         condition: service_healthy
       whoami-migrate:
         condition: service_completed_successfully
+
     environment:
       HTTP_SERVER_ADDRESS: ${HTTP_SERVER_ADDRESS}
       HTTP_PORT: ${HTTP_PORT}
@@ -67,5 +68,13 @@ services:
       SMTP_PORT: ${SMTP_PORT}
       SMTP_USERNAME: ${SMTP_USERNAME}
       SMTP_PASSWORD: ${SMTP_PASSWORD}
+      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID}
+      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET}
+      GOOGLE_OAUTH_REDIRECT_URL: ${GOOGLE_OAUTH_REDIRECT_URL}
+      GITHUB_OAUTH_CLIENT_ID: ${GITHUB_OAUTH_CLIENT_ID}
+      GITHUB_OAUTH_CLIENT_SECRET: ${GITHUB_OAUTH_CLIENT_SECRET}
+      GITHUB_OAUTH_REDIRECT_URL: ${GITHUB_OAUTH_REDIRECT_URL}
+    ports:
+      - "${HTTP_PORT}:${HTTP_PORT}"
 volumes:
   whoami-db:

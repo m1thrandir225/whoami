@@ -25,6 +25,14 @@ type Config struct {
 	SMTPPort             int           `mapstructure:"SMTP_PORT"`
 	SMTPUsername         string        `mapstructure:"SMTP_USERNAME"`
 	SMTPPassword         string        `mapstructure:"SMTP_PASSWORD"`
+
+	// OAuth Configuration
+	GoogleOAuthClientID     string `mapstructure:"GOOGLE_OAUTH_CLIENT_ID"`
+	GoogleOAuthClientSecret string `mapstructure:"GOOGLE_OAUTH_CLIENT_SECRET"`
+	GoogleOAuthRedirectURL  string `mapstructure:"GOOGLE_OAUTH_REDIRECT_URL"`
+	GitHubOAuthClientID     string `mapstructure:"GITHUB_OAUTH_CLIENT_ID"`
+	GitHubOAuthClientSecret string `mapstructure:"GITHUB_OAUTH_CLIENT_SECRET"`
+	GitHubOAuthRedirectURL  string `mapstructure:"GITHUB_OAUTH_REDIRECT_URL"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
@@ -62,6 +70,12 @@ func LoadConfig(path string) (config Config, err error) {
 	viper.BindEnv("SMTP_PORT")
 	viper.BindEnv("SMTP_USERNAME")
 	viper.BindEnv("SMTP_PASSWORD")
+	viper.BindEnv("GOOGLE_OAUTH_CLIENT_ID")
+	viper.BindEnv("GOOGLE_OAUTH_CLIENT_SECRET")
+	viper.BindEnv("GOOGLE_OAUTH_REDIRECT_URL")
+	viper.BindEnv("GITHUB_OAUTH_CLIENT_ID")
+	viper.BindEnv("GITHUB_OAUTH_CLIENT_SECRET")
+	viper.BindEnv("GITHUB_OAUTH_REDIRECT_URL")
 
 	err = viper.Unmarshal(&config)
 	if err != nil {

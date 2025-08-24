@@ -65,17 +65,18 @@ type LoginAttempt struct {
 }
 
 type OauthAccount struct {
-	ID               int64       `json:"id"`
-	UserID           int64       `json:"user_id"`
-	Provider         string      `json:"provider"`
-	ProviderUserID   string      `json:"provider_user_id"`
-	ProviderUsername pgtype.Text `json:"provider_username"`
-	ProviderEmail    pgtype.Text `json:"provider_email"`
-	AccessToken      string      `json:"access_token"`
-	RefreshToken     string      `json:"refresh_token"`
-	TokenExpiresAt   *time.Time  `json:"token_expires_at"`
-	CreatedAt        *time.Time  `json:"created_at"`
-	UpdatedAt        *time.Time  `json:"updated_at"`
+	ID             int64       `json:"id"`
+	UserID         int64       `json:"user_id"`
+	Provider       string      `json:"provider"`
+	ProviderUserID string      `json:"provider_user_id"`
+	Email          pgtype.Text `json:"email"`
+	Name           pgtype.Text `json:"name"`
+	AvatarUrl      pgtype.Text `json:"avatar_url"`
+	AccessToken    string      `json:"access_token"`
+	RefreshToken   string      `json:"refresh_token"`
+	TokenExpiresAt *time.Time  `json:"token_expires_at"`
+	CreatedAt      *time.Time  `json:"created_at"`
+	UpdatedAt      *time.Time  `json:"updated_at"`
 }
 
 type PasswordHistory struct {

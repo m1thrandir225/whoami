@@ -27,7 +27,8 @@ type PrivacySettings struct {
 }
 
 type CreateUserAction struct {
-	Email           string          `json:"email"`
-	Password        string          `json:"password"`
-	PrivacySettings PrivacySettings `json:"privacy_settings"`
+	Email           string           `json:"email"`
+	Password        string           `json:"password"`
+	Username        *string          `json:"username"`
+	PrivacySettings *PrivacySettings `json:"privacy_settings"`
 }

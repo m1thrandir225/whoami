@@ -25,6 +25,12 @@ func SetupRoutes(router *gin.Engine, handler *HTTPHandler) {
 			passwordReset.POST("/reset", handler.ResetPassword)
 		}
 
+		oauth := apiV1.Group("/oauth")
+		{
+			oauth.GET("/login/:provider", handler.OAuthLogin)
+			oauth.GET("/callback/:provider", handler.OAuthCallback)
+		}
+
 		protected := apiV1.Group("/")
 		protected.Use(AuthMiddleware(handler.tokenMaker, handler.tokenBlacklist))
 		protected.Use(handler.rateLimiter.UserRateLimitMiddleware(security.DefaultRateLimit))
@@ -87,6 +93,13 @@ func SetupRoutes(router *gin.Engine, handler *HTTPHandler) {
 				exports.GET("/:id", handler.GetDataExport)
 				exports.GET("/:id/download", handler.DownloadDataExport)
 				exports.DELETE("/:id", handler.DeleteDataExport)
+			}
+
+			oauth := protected.Group("/oauth")
+			{
+				oauth.POST("/link", handler.LinkOAuthAccount)
+				oauth.GET("/accounts", handler.GetOAuthAccounts)
+				oauth.DELETE("/unlink/:provider", handler.UnlinkOAuthAccount)
 			}
 		}
 
