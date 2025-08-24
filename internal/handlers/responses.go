@@ -8,15 +8,17 @@ import (
 )
 
 type registerResponse struct {
-	User         domain.User `json:"user"`
-	AccessToken  string      `json:"access_token"`
-	RefreshToken string      `json:"refresh_token"`
+	User         domain.User        `json:"user"`
+	AccessToken  string             `json:"access_token"`
+	RefreshToken string             `json:"refresh_token"`
+	Device       *domain.UserDevice `json:"device"`
 }
 
 type loginResponse struct {
-	User         domain.User `json:"user"`
-	AccessToken  string      `json:"access_token"`
-	RefreshToken string      `json:"refresh_token"`
+	User         domain.User        `json:"user"`
+	AccessToken  string             `json:"access_token"`
+	RefreshToken string             `json:"refresh_token"`
+	Device       *domain.UserDevice `json:"device"`
 }
 
 type refreshTokenResponse struct {

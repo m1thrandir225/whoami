@@ -53,6 +53,7 @@ func (h *HTTPHandler) Register(ctx *gin.Context) {
 	if err := h.emailService.SendVerificationEmail(ctx, user.ID, user.Email); err != nil {
 		fmt.Printf("Warning: Failed to send verification email: %v\n", err)
 	}
+
 	accessToken, _, err := h.tokenMaker.CreateToken(user.ID, h.config.AccessTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -65,6 +66,29 @@ func (h *HTTPHandler) Register(ctx *gin.Context) {
 		return
 	}
 
+	// Extract device information
+	deviceInfo := security.ExtractDeviceInfo(ctx)
+
+	// Create device for new user
+	device, err := h.userDevicesService.GetOrCreateDevice(ctx, user.ID, deviceInfo)
+	if err != nil {
+		// Log error but don't fail the registration
+		fmt.Printf("Warning: Failed to create device record: %v\n", err)
+	}
+
+	// Create session with device info
+	deviceInfoMap := map[string]string{
+		"device_id":   deviceInfo.DeviceID,
+		"device_name": deviceInfo.DeviceName,
+		"device_type": deviceInfo.DeviceType,
+		"user_agent":  deviceInfo.UserAgent,
+		"ip_address":  deviceInfo.IPAddress,
+	}
+
+	if err := h.sessionService.CreateSession(ctx, user.ID, accessToken, deviceInfoMap); err != nil {
+		fmt.Printf("Warning: Failed to create session: %v\n", err)
+	}
+
 	// Log successful registration
 	h.auditService.LogUserAction(ctx, user.ID, domain.AuditActionUserRegister, domain.AuditResourceTypeUser, user.ID, ctx.Request, map[string]interface{}{
 		"email":   user.Email,
@@ -75,6 +99,7 @@ func (h *HTTPHandler) Register(ctx *gin.Context) {
 		User:         *user,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
+		Device:       device,
 	}
 	ctx.JSON(http.StatusOK, response)
 }
@@ -159,10 +184,41 @@ func (h *HTTPHandler) Login(ctx *gin.Context) {
 		return
 	}
 
+	// Extract device information
+	deviceInfo := security.ExtractDeviceInfo(ctx)
+
+	// Create or get device
+	device, err := h.userDevicesService.GetOrCreateDevice(ctx, user.ID, deviceInfo)
+	if err != nil {
+		// Log error but don't fail the login
+		fmt.Printf("Warning: Failed to create device record: %v\n", err)
+	}
+
+	// Update device last used time
+	if device != nil {
+		if _, err := h.userDevicesService.UpdateDeviceLastUsed(ctx, device.ID); err != nil {
+			fmt.Printf("Warning: Failed to update device last used: %v\n", err)
+		}
+	}
+
+	// Create session with device info
+	deviceInfoMap := map[string]string{
+		"device_id":   deviceInfo.DeviceID,
+		"device_name": deviceInfo.DeviceName,
+		"device_type": deviceInfo.DeviceType,
+		"user_agent":  deviceInfo.UserAgent,
+		"ip_address":  deviceInfo.IPAddress,
+	}
+
+	if err := h.sessionService.CreateSession(ctx, user.ID, accessToken, deviceInfoMap); err != nil {
+		fmt.Printf("Warning: Failed to create session: %v\n", err)
+	}
+
 	response := loginResponse{
 		User:         *user,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
+		Device:       device,
 	}
 
 	ctx.JSON(http.StatusOK, response)
@@ -330,6 +386,7 @@ func (h *HTTPHandler) Logout(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
+
 	authorizationHeader := ctx.GetHeader("authorization")
 	fields := strings.Fields(authorizationHeader)
 	if len(fields) < 2 {
@@ -338,6 +395,7 @@ func (h *HTTPHandler) Logout(ctx *gin.Context) {
 	}
 	token := fields[1]
 
+	// Revoke the session (this will also blacklist the token)
 	if err := h.sessionService.RevokeSession(ctx, token); err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
