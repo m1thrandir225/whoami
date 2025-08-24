@@ -82,6 +82,7 @@ func main() {
 	emailVerificationRepository := repositories.NewEmailVerificationRepository(dbStore)
 	passwordResetRepository := repositories.NewPasswordResetRepository(dbStore)
 	loginAttemptsRepository := repositories.NewLoginAttemptsRepository(dbStore)
+	auditLogsRepository := repositories.NewAuditLogsRepository(dbStore)
 
 	/*
 	* Services
@@ -108,6 +109,7 @@ func main() {
 		passwordSecurityService,
 		&config,
 	)
+	auditService := services.NewAuditService(auditLogsRepository)
 	tokenBlacklist := security.NewTokenBlacklist(redisClient)
 	sessionService := services.NewSessionService(redisClient, tokenBlacklist)
 
@@ -118,9 +120,9 @@ func main() {
 		userService,
 		securityService,
 		passwordSecurityService,
-
 		passwordResetService,
 		emailService,
+		auditService,
 		tokenMaker,
 		tokenBlacklist,
 		sessionService,

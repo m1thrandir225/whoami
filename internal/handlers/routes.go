@@ -55,6 +55,18 @@ func SetupRoutes(router *gin.Engine, handler *HTTPHandler) {
 				security.POST("/activities/resolve", handler.ResolveSuspiciousActivity)
 				security.POST("/cleanup", handler.CleanupExpiredLockouts)
 			}
+
+			audit := protected.Group("/audit")
+			{
+				audit.GET("/user/:user_id", handler.GetAuditLogsByUserID)
+				audit.GET("/action/:action", handler.GetAuditLogsByAction)
+				audit.GET("/resource/:resource_type", handler.GetAuditLogsByResourceType)
+				audit.GET("/resource/:resource_type/:resource_id", handler.GetAuditLogsByResourceID)
+				audit.GET("/ip/:ip", handler.GetAuditLogsByIP)
+				audit.GET("/date-range", handler.GetAuditLogsByDateRange)
+				audit.GET("/recent", handler.GetRecentAuditLogs)
+				audit.POST("/cleanup", handler.CleanupOldAuditLogs)
+			}
 		}
 
 		email := apiV1.Group("/email")

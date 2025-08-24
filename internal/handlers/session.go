@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/m1thrandir225/whoami/internal/domain"
 )
 
 func (h *HTTPHandler) GetUserSessions(ctx *gin.Context) {
@@ -19,6 +20,13 @@ func (h *HTTPHandler) GetUserSessions(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	// Log session retrieval
+	h.auditService.LogUserAction(ctx, payload.UserID, domain.AuditActionSessionCreate, domain.AuditResourceTypeSession, payload.UserID, ctx.Request, map[string]interface{}{
+		"action":  "get_sessions",
+		"count":   len(sessions),
+		"success": true,
+	})
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"sessions": sessions,
@@ -55,6 +63,12 @@ func (h *HTTPHandler) RevokeSession(ctx *gin.Context) {
 		return
 	}
 
+	// Log session revocation
+	h.auditService.LogUserAction(ctx, payload.UserID, domain.AuditActionSessionRevoke, domain.AuditResourceTypeSession, payload.UserID, ctx.Request, map[string]interface{}{
+		"token":   req.Token,
+		"success": true,
+	})
+
 	ctx.JSON(http.StatusOK, messageResponse("Session revoked successfully"))
 }
 
@@ -80,6 +94,12 @@ func (h *HTTPHandler) RevokeAllSessions(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	// Log all sessions revocation
+	h.auditService.LogUserAction(ctx, payload.UserID, domain.AuditActionSessionRevokeAll, domain.AuditResourceTypeSession, payload.UserID, ctx.Request, map[string]interface{}{
+		"action":  "revoke_all_sessions",
+		"success": true,
+	})
 
 	ctx.JSON(http.StatusOK, messageResponse("All sessions revoked successfully"))
 }

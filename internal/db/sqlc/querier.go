@@ -16,6 +16,7 @@ type Querier interface {
 	CheckPasswordInHistory(ctx context.Context, arg CheckPasswordInHistoryParams) (int64, error)
 	CleanupExpiredRefreshTokens(ctx context.Context) error
 	CreateAccountLockout(ctx context.Context, arg CreateAccountLockoutParams) (AccountLockout, error)
+	CreateAuditLog(ctx context.Context, arg CreateAuditLogParams) (AuditLog, error)
 	CreateEmailVerification(ctx context.Context, arg CreateEmailVerificationParams) (EmailVerification, error)
 	CreateLoginAttempt(ctx context.Context, arg CreateLoginAttemptParams) (LoginAttempt, error)
 	CreatePasswordHistory(ctx context.Context, arg CreatePasswordHistoryParams) (PasswordHistory, error)
@@ -27,6 +28,7 @@ type Querier interface {
 	DeactivateUser(ctx context.Context, id int64) error
 	DeleteAccountLockoutByID(ctx context.Context, id int64) error
 	DeleteExpiredLockouts(ctx context.Context) error
+	DeleteOldAuditLogs(ctx context.Context) error
 	DeleteOldLoginAttempts(ctx context.Context) error
 	DeleteOldPasswordHistory(ctx context.Context, userID int64) error
 	DeleteUnusedPasswordResets(ctx context.Context, userID int64) error
@@ -35,6 +37,12 @@ type Querier interface {
 	GetAccountLockoutByUserAndIP(ctx context.Context, arg GetAccountLockoutByUserAndIPParams) (AccountLockout, error)
 	GetAccountLockoutByUserID(ctx context.Context, userID int64) (AccountLockout, error)
 	GetActiveRefreshTokensByUser(ctx context.Context, userID int64) ([]RefreshToken, error)
+	GetAuditLogsByAction(ctx context.Context, arg GetAuditLogsByActionParams) ([]AuditLog, error)
+	GetAuditLogsByDateRange(ctx context.Context, arg GetAuditLogsByDateRangeParams) ([]AuditLog, error)
+	GetAuditLogsByIP(ctx context.Context, arg GetAuditLogsByIPParams) ([]AuditLog, error)
+	GetAuditLogsByResourceID(ctx context.Context, arg GetAuditLogsByResourceIDParams) ([]AuditLog, error)
+	GetAuditLogsByResourceType(ctx context.Context, arg GetAuditLogsByResourceTypeParams) ([]AuditLog, error)
+	GetAuditLogsByUserID(ctx context.Context, arg GetAuditLogsByUserIDParams) ([]AuditLog, error)
 	GetEmailVerificationByToken(ctx context.Context, tokenHash string) (EmailVerification, error)
 	GetFailedLoginAttemptsByEmail(ctx context.Context, arg GetFailedLoginAttemptsByEmailParams) ([]LoginAttempt, error)
 	GetFailedLoginAttemptsByIP(ctx context.Context, arg GetFailedLoginAttemptsByIPParams) ([]LoginAttempt, error)
@@ -44,6 +52,7 @@ type Querier interface {
 	GetLoginAttemptsByUserID(ctx context.Context, arg GetLoginAttemptsByUserIDParams) ([]LoginAttempt, error)
 	GetPasswordHistoryByUserID(ctx context.Context, arg GetPasswordHistoryByUserIDParams) ([]PasswordHistory, error)
 	GetPasswordResetByToken(ctx context.Context, tokenHash string) (PasswordReset, error)
+	GetRecentAuditLogs(ctx context.Context, limit int32) ([]AuditLog, error)
 	GetRecentFailedAttemptsByEmail(ctx context.Context, email string) ([]LoginAttempt, error)
 	GetRecentFailedAttemptsByIP(ctx context.Context, ipAddress netip.Addr) ([]LoginAttempt, error)
 	GetRecentFailedAttemptsByUserID(ctx context.Context, userID pgtype.Int8) ([]LoginAttempt, error)

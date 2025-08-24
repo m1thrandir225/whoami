@@ -13,6 +13,7 @@ type HTTPHandler struct {
 	passwordSecurityService services.PasswordSecurityService
 	passwordResetService    services.PasswordResetService
 	emailService            services.EmailService
+	auditService            services.AuditService
 	tokenMaker              security.TokenMaker
 	tokenBlacklist          security.TokenBlacklist
 	sessionService          services.SessionService
@@ -26,6 +27,7 @@ func NewHTTPHandler(
 	passwordSecurityService services.PasswordSecurityService,
 	passwordResetService services.PasswordResetService,
 	emailService services.EmailService,
+	auditService services.AuditService,
 	tokenMaker security.TokenMaker,
 	tokenBlacklist security.TokenBlacklist,
 	sessionService services.SessionService,
@@ -38,6 +40,7 @@ func NewHTTPHandler(
 		passwordSecurityService: passwordSecurityService,
 		passwordResetService:    passwordResetService,
 		emailService:            emailService,
+		auditService:            auditService,
 		tokenMaker:              tokenMaker,
 		tokenBlacklist:          tokenBlacklist,
 		sessionService:          sessionService,

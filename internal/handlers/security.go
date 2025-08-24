@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/m1thrandir225/whoami/internal/domain"
 )
 
 func (h *HTTPHandler) GetSuspiciousActivities(ctx *gin.Context) {
@@ -18,6 +19,13 @@ func (h *HTTPHandler) GetSuspiciousActivities(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	// Log suspicious activities retrieval
+	h.auditService.LogUserAction(ctx, payload.UserID, domain.AuditActionSuspiciousActivity, domain.AuditResourceTypeAccount, payload.UserID, ctx.Request, map[string]interface{}{
+		"action":  "get_suspicious_activities",
+		"count":   len(activities),
+		"success": true,
+	})
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"activities": activities,
@@ -44,6 +52,13 @@ func (h *HTTPHandler) ResolveSuspiciousActivity(ctx *gin.Context) {
 		return
 	}
 
+	// Log suspicious activity resolution
+	h.auditService.LogSystemAction(ctx, domain.AuditActionSuspiciousActivity, domain.AuditResourceTypeAccount, req.ActivityID, ctx.Request, map[string]interface{}{
+		"activity_id": req.ActivityID,
+		"action":      "resolve",
+		"success":     true,
+	})
+
 	ctx.JSON(http.StatusOK, messageResponse("Activity resolved successfully"))
 }
 
@@ -53,6 +68,12 @@ func (h *HTTPHandler) CleanupExpiredLockouts(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	// Log cleanup action
+	h.auditService.LogSystemAction(ctx, "cleanup_expired_lockouts", domain.AuditResourceTypeAccount, 0, ctx.Request, map[string]interface{}{
+		"action":  "cleanup_expired_lockouts",
+		"success": true,
+	})
 
 	ctx.JSON(http.StatusOK, messageResponse("Expired lockouts cleaned up successfully"))
 }

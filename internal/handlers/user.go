@@ -64,6 +64,12 @@ func (h *HTTPHandler) Register(ctx *gin.Context) {
 		return
 	}
 
+	// Log successful registration
+	h.auditService.LogUserAction(ctx, user.ID, domain.AuditActionUserRegister, domain.AuditResourceTypeUser, user.ID, ctx.Request, map[string]interface{}{
+		"email":   user.Email,
+		"success": true,
+	})
+
 	response := registerResponse{
 		User:         *user,
 		AccessToken:  accessToken,
@@ -88,6 +94,14 @@ func (h *HTTPHandler) Login(ctx *gin.Context) {
 		// Record failed login attempt even if user doesn't exist
 		// This prevents user enumeration attacks
 		h.securityService.RecordFailedLogin(ctx, 0, requestData.Email, clientIP, userAgent)
+
+		// Log failed login attempt
+		h.auditService.LogAnonymousAction(ctx, domain.AuditActionUserLogin, domain.AuditResourceTypeUser, 0, ctx.Request, map[string]interface{}{
+			"email":   requestData.Email,
+			"success": false,
+			"reason":  "user_not_found",
+		})
+
 		ctx.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid credentials")))
 		return
 	}
@@ -102,6 +116,14 @@ func (h *HTTPHandler) Login(ctx *gin.Context) {
 	if err := util.ComparePassword(user.Password, requestData.Password); err != nil {
 		// Record failed login attempt
 		h.securityService.RecordFailedLogin(ctx, user.ID, requestData.Email, clientIP, userAgent)
+
+		// Log failed login attempt
+		h.auditService.LogUserAction(ctx, user.ID, domain.AuditActionUserLogin, domain.AuditResourceTypeUser, user.ID, ctx.Request, map[string]interface{}{
+			"email":   requestData.Email,
+			"success": false,
+			"reason":  "invalid_password",
+		})
+
 		ctx.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid credentials")))
 		return
 	}
@@ -111,6 +133,12 @@ func (h *HTTPHandler) Login(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	// Log successful login
+	h.auditService.LogUserAction(ctx, user.ID, domain.AuditActionUserLogin, domain.AuditResourceTypeUser, user.ID, ctx.Request, map[string]interface{}{
+		"email":   requestData.Email,
+		"success": true,
+	})
 
 	// Update last login time
 	if err := h.userService.UpdateLastLogin(ctx, user.ID); err != nil {
@@ -180,6 +208,12 @@ func (h *HTTPHandler) DeactivateUser(ctx *gin.Context) {
 		return
 	}
 
+	// Log user deactivation
+	h.auditService.LogSystemAction(ctx, domain.AuditActionUserDeactivate, domain.AuditResourceTypeUser, userID, ctx.Request, map[string]interface{}{
+		"user_id": userID,
+		"success": true,
+	})
+
 	ctx.Status(http.StatusOK)
 }
 
@@ -201,6 +235,12 @@ func (h *HTTPHandler) ActivateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	// Log user activation
+	h.auditService.LogSystemAction(ctx, domain.AuditActionUserActivate, domain.AuditResourceTypeUser, userID, ctx.Request, map[string]interface{}{
+		"user_id": userID,
+		"success": true,
+	})
 
 	ctx.Status(http.StatusOK)
 }
@@ -236,6 +276,14 @@ func (h *HTTPHandler) UpdateUser(ctx *gin.Context) {
 		return
 	}
 
+	// Log user update
+	h.auditService.LogSystemAction(ctx, domain.AuditActionUserUpdate, domain.AuditResourceTypeUser, userID, ctx.Request, map[string]interface{}{
+		"user_id":  userID,
+		"email":    requestData.Email,
+		"username": requestData.Username,
+		"success":  true,
+	})
+
 	ctx.Status(http.StatusOK)
 }
 
@@ -264,11 +312,19 @@ func (h *HTTPHandler) UpdateUserPrivacySettings(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	// Log privacy settings update
+	h.auditService.LogSystemAction(ctx, domain.AuditActionPrivacySettings, domain.AuditResourceTypePrivacy, userID, ctx.Request, map[string]interface{}{
+		"user_id":          userID,
+		"privacy_settings": requestData,
+		"success":          true,
+	})
+
 	ctx.Status(http.StatusOK)
 }
 
 func (h *HTTPHandler) Logout(ctx *gin.Context) {
-	_, err := GetCurrentUserPayload(ctx)
+	payload, err := GetCurrentUserPayload(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
@@ -286,6 +342,12 @@ func (h *HTTPHandler) Logout(ctx *gin.Context) {
 		return
 	}
 
+	// Log logout action
+	h.auditService.LogUserAction(ctx, payload.UserID, domain.AuditActionUserLogout, domain.AuditResourceTypeSession, payload.UserID, ctx.Request, map[string]interface{}{
+		"token":   token,
+		"success": true,
+	})
+
 	ctx.JSON(http.StatusOK, messageResponse("Logged out successfully"))
 }
 
@@ -298,6 +360,13 @@ func (h *HTTPHandler) RefreshToken(ctx *gin.Context) {
 
 	payload, err := h.tokenMaker.VerifyToken(req.RefreshToken)
 	if err != nil {
+		// Log failed token refresh
+		h.auditService.LogAnonymousAction(ctx, "token_refresh", domain.AuditResourceTypeSession, 0, ctx.Request, map[string]interface{}{
+			"token":   req.RefreshToken,
+			"success": false,
+			"reason":  err.Error(),
+		})
+
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
@@ -307,6 +376,11 @@ func (h *HTTPHandler) RefreshToken(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	// Log successful token refresh
+	h.auditService.LogUserAction(ctx, payload.UserID, "token_refresh", domain.AuditResourceTypeSession, payload.UserID, ctx.Request, map[string]interface{}{
+		"success": true,
+	})
 
 	response := refreshTokenResponse{
 		AccessToken: accessToken,
@@ -324,9 +398,22 @@ func (h *HTTPHandler) VerifyEmail(ctx *gin.Context) {
 	}
 
 	if err := h.emailService.VerifyEmailToken(ctx, req.Token); err != nil {
+		// Log failed email verification
+		h.auditService.LogAnonymousAction(ctx, domain.AuditActionEmailVerify, domain.AuditResourceTypeEmail, 0, ctx.Request, map[string]interface{}{
+			"token":   req.Token,
+			"success": false,
+			"reason":  err.Error(),
+		})
+
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+
+	// Log successful email verification
+	h.auditService.LogSystemAction(ctx, domain.AuditActionEmailVerify, domain.AuditResourceTypeEmail, 0, ctx.Request, map[string]interface{}{
+		"token":   req.Token,
+		"success": true,
+	})
 
 	ctx.JSON(http.StatusOK, messageResponse("Email verified successfully"))
 }
@@ -353,6 +440,12 @@ func (h *HTTPHandler) ResendVerificationEmail(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	// Log email resend action
+	h.auditService.LogUserAction(ctx, payload.UserID, domain.AuditActionEmailResend, domain.AuditResourceTypeEmail, user.ID, ctx.Request, map[string]interface{}{
+		"email":   user.Email,
+		"success": true,
+	})
 
 	ctx.JSON(http.StatusOK, messageResponse("Verification email resent successfully"))
 }
@@ -386,6 +479,11 @@ func (h *HTTPHandler) UpdatePassword(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+
+	h.auditService.LogUserAction(ctx, payload.UserID, domain.AuditActionPasswordChange, domain.AuditResourceTypeUser, payload.UserID, ctx.Request, map[string]interface{}{
+		"email":   user.Email,
+		"success": true,
+	})
 
 	ctx.JSON(http.StatusOK, messageResponse("Password updated successfully"))
 }
