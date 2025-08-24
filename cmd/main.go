@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/m1thrandir225/whoami/cmd/pkg/redis"
 	db "github.com/m1thrandir225/whoami/internal/db/sqlc"
 	"github.com/m1thrandir225/whoami/internal/handlers"
 	"github.com/m1thrandir225/whoami/internal/repositories"
@@ -21,6 +22,9 @@ import (
 )
 
 func main() {
+	/**
+	* Load config
+	 */
 	ctx, cancel := context.WithCancel(context.Background())
 
 	config, err := util.LoadConfig("..")
@@ -28,23 +32,45 @@ func main() {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
+	/**
+	* Connect to database
+	 */
 	connPool, err := pgxpool.New(ctx, config.DBSource)
 	if err != nil {
 		log.Fatalf("Could not connect to database: %v", err)
 	}
 	defer connPool.Close()
 
-	rateLimiter, err := security.NewRateLimiter(config.RedisURL)
+	/**
+	* Connect to Redis
+	 */
+	redisClient, err := redis.NewRedisClient(config.RedisURL)
+	if err != nil {
+		log.Fatalf("Could not connect to Redis: %v", err)
+	}
+	defer redisClient.Close()
+
+	/**
+	* Create rate limiter
+	 */
+	rateLimiter, err := security.NewRateLimiter(redisClient)
 	if err != nil {
 		log.Fatalf("Could not create rate limiter: %v", err)
 	}
 	defer rateLimiter.Close()
 
-	dbStore := db.NewStore(connPool)
+	/**
+	* Create token maker
+	 */
 	tokenMaker, err := security.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
 		log.Fatalf("Could not create tokenMaker: %v", err)
 	}
+
+	/**
+	* Create database store
+	 */
+	dbStore := db.NewStore(connPool)
 
 	/*
 	* Repositories
@@ -80,8 +106,11 @@ func main() {
 		passwordSecurityService,
 		&config,
 	)
+	tokenBlacklist := security.NewTokenBlacklist(redisClient)
+	sessionService := services.NewSessionService(redisClient, tokenBlacklist)
+
 	/**
-	* HTTP
+	* Create HTTP handler
 	 */
 	handler := handlers.NewHTTPHandler(
 		userService,
@@ -90,6 +119,8 @@ func main() {
 		passwordResetService,
 		emailService,
 		tokenMaker,
+		tokenBlacklist,
+		sessionService,
 		rateLimiter,
 		config,
 	)
@@ -107,18 +138,27 @@ func main() {
 		Handler: router,
 	}
 
+	/**
+	* Start HTTP server
+	 */
 	go func() {
 		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("listen: %s\n", err)
 		}
 	}()
 
+	/**
+	* Wait for shutdown signal
+	 */
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	log.Println("Shutdown Server ...")
 	cancel()
 
+	/**
+	* Shutdown HTTP server
+	 */
 	_, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer shutdownCancel()
 }

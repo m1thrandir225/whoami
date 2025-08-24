@@ -21,12 +21,12 @@ func SetupRoutes(router *gin.Engine, handler *HTTPHandler) {
 		passwordReset.Use(handler.rateLimiter.RateLimitMiddleware(security.PasswordResetRateLimit))
 		{
 			passwordReset.POST("/request", handler.RequestPasswordReset)
-			passwordReset.POST("/reset", handler.ResetPassword)
 			passwordReset.POST("/verify", handler.VerifyResetToken)
+			passwordReset.POST("/reset", handler.ResetPassword)
 		}
 
 		protected := apiV1.Group("/")
-		protected.Use(AuthMiddleware(handler.tokenMaker))
+		protected.Use(AuthMiddleware(handler.tokenMaker, handler.tokenBlacklist))
 		protected.Use(handler.rateLimiter.UserRateLimitMiddleware(security.DefaultRateLimit))
 		{
 			protected.GET("/me", handler.GetCurrentUser)
@@ -40,6 +40,13 @@ func SetupRoutes(router *gin.Engine, handler *HTTPHandler) {
 				user.PUT("/:id", handler.UpdateUser)
 				user.PUT("/:id/privacy-settings", handler.UpdateUserPrivacySettings)
 				user.POST("/update-password", handler.UpdatePassword)
+			}
+
+			sessions := protected.Group("/sessions")
+			{
+				sessions.GET("", handler.GetUserSessions)
+				sessions.DELETE("/:token", handler.RevokeSession)
+				sessions.DELETE("", handler.RevokeAllSessions)
 			}
 
 			security := protected.Group("/security")

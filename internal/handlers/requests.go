@@ -48,3 +48,11 @@ type resetPasswordRequest struct {
 type verifyResetTokenRequest struct {
 	Token string `json:"token" binding:"required"`
 }
+
+type revokeSessionRequest struct {
+	Token string `json:"token" binding:"required"`
+}
+
+type revokeAllSessionsRequest struct {
+	Reason string `json:"reason"`
+}

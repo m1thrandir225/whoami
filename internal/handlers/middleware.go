@@ -16,7 +16,7 @@ const (
 	AuthorizationPayloadKey = "authorization_payload"
 )
 
-func AuthMiddleware(tokenMaker security.TokenMaker) gin.HandlerFunc {
+func AuthMiddleware(tokenMaker security.TokenMaker, tokenBlacklist security.TokenBlacklist) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authorizationHeader := ctx.GetHeader(AuthorizationHeaderKey)
 		if len(authorizationHeader) == 0 {
@@ -40,6 +40,17 @@ func AuthMiddleware(tokenMaker security.TokenMaker) gin.HandlerFunc {
 		}
 
 		accessToken := fields[1]
+		isBlacklisted, err := tokenBlacklist.IsTokenBlacklisted(ctx, accessToken)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))
+			return
+		}
+
+		if isBlacklisted {
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(errors.New("token is blacklisted")))
+			return
+		}
+
 		payload, err := tokenMaker.VerifyToken(accessToken)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))

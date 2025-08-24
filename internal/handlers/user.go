@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/m1thrandir225/whoami/internal/domain"
@@ -267,11 +268,23 @@ func (h *HTTPHandler) UpdateUserPrivacySettings(ctx *gin.Context) {
 }
 
 func (h *HTTPHandler) Logout(ctx *gin.Context) {
+	_, err := GetCurrentUserPayload(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+	authorizationHeader := ctx.GetHeader("authorization")
+	fields := strings.Fields(authorizationHeader)
+	if len(fields) < 2 {
+		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("invalid authorization header")))
+		return
+	}
+	token := fields[1]
 
-	// TODO:
-	// 1. Add the token to a blacklist in Redis
-	// 2. Invalidate refresh tokens
-	// 3. Log the logout event
+	if err := h.sessionService.RevokeSession(ctx, token); err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
 
 	ctx.JSON(http.StatusOK, messageResponse("Logged out successfully"))
 }
