@@ -56,3 +56,9 @@ type revokeSessionRequest struct {
 type revokeAllSessionsRequest struct {
 	Reason string `json:"reason"`
 }
+
+type resetRateLimitRequest struct {
+	Type   string `json:"type" binding:"required"`
+	IP     string `json:"ip"`
+	UserID int64  `json:"user_id"`
+}

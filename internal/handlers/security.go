@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -76,4 +77,46 @@ func (h *HTTPHandler) CleanupExpiredLockouts(ctx *gin.Context) {
 	})
 
 	ctx.JSON(http.StatusOK, messageResponse("Expired lockouts cleaned up successfully"))
+}
+
+func (h *HTTPHandler) ResetRateLimit(ctx *gin.Context) {
+	if h.config.Environment != "development" {
+		ctx.JSON(http.StatusForbidden, errorResponse(errors.New("this endpoint is only available in development mode")))
+		return
+	}
+
+	var req resetRateLimitRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	var err error
+
+	switch req.Type {
+	case "all":
+		err = h.rateLimiter.ResetAllRateLimits(ctx)
+	case "ip":
+		if req.IP == "" {
+			ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("IP address required for IP-based reset")))
+			return
+		}
+		err = h.rateLimiter.ResetRateLimitByIP(ctx, req.IP)
+	case "user":
+		if req.UserID == 0 {
+			ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("user ID required for user-based reset")))
+			return
+		}
+		err = h.rateLimiter.ResetRateLimitByUser(ctx, req.UserID)
+	default:
+		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("invalid reset type. Use 'all', 'ip', or 'user'")))
+		return
+	}
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, messageResponse("Rate limits reset successfully"))
 }

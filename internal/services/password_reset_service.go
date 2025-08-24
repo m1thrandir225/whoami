@@ -5,13 +5,12 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"net/smtp"
 	"time"
 
 	"github.com/m1thrandir225/whoami/internal/domain"
+	"github.com/m1thrandir225/whoami/internal/mail"
 	"github.com/m1thrandir225/whoami/internal/repositories"
 	"github.com/m1thrandir225/whoami/internal/security"
-	"github.com/m1thrandir225/whoami/internal/util"
 )
 
 type PasswordResetService interface {
@@ -24,20 +23,20 @@ type passwordResetService struct {
 	passwordResetRepo       repositories.PasswordResetRepository
 	userRepo                repositories.UserRepository
 	passwordSecurityService PasswordSecurityService
-	config                  *util.Config
+	mailService             mail.MailService
 }
 
 func NewPasswordResetService(
 	passwordResetRepo repositories.PasswordResetRepository,
 	userRepo repositories.UserRepository,
 	passwordSecurityService PasswordSecurityService,
-	config *util.Config,
+	mailService mail.MailService,
 ) PasswordResetService {
 	return &passwordResetService{
 		passwordResetRepo:       passwordResetRepo,
 		userRepo:                userRepo,
 		passwordSecurityService: passwordSecurityService,
-		config:                  config,
+		mailService:             mailService,
 	}
 }
 func (s *passwordResetService) RequestPasswordReset(ctx context.Context, email string) error {
@@ -134,20 +133,7 @@ func (s *passwordResetService) generateResetToken() (string, error) {
 }
 
 func (s *passwordResetService) sendPasswordResetEmail(email, token string) error {
-	if s.config.SMTPHost == "" || s.config.SMTPPort == 0 {
-		// In development, just log the email
-		fmt.Printf("=== PASSWORD RESET EMAIL ===\nTo: %s\nSubject: Password Reset\nBody:\n%s\n=== END EMAIL ===\n",
-			email, s.buildPasswordResetEmailContent(token))
-		return nil
-	}
-
-	auth := smtp.PlainAuth("", s.config.SMTPUsername, s.config.SMTPPassword, s.config.SMTPHost)
-
-	msg := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s",
-		s.config.SMTPUsername, email, "Password Reset", s.buildPasswordResetEmailContent(token))
-
-	addr := fmt.Sprintf("%s:%d", s.config.SMTPHost, s.config.SMTPPort)
-	return smtp.SendMail(addr, auth, s.config.SMTPUsername, []string{email}, []byte(msg))
+	return s.mailService.SendMail("whoami@sebastijanzindl.me", email, "Password Reset", s.buildPasswordResetEmailContent(token))
 }
 
 func (s *passwordResetService) buildPasswordResetEmailContent(token string) string {

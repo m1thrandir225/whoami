@@ -203,6 +203,49 @@ func (rl *RateLimiter) UserRateLimitMiddleware(config RateLimitConfig) gin.Handl
 	}
 }
 
+func (rl *RateLimiter) ResetRateLimit(ctx context.Context, key string) error {
+	return rl.redisClient.Del(ctx, key).Err()
+}
+
+func (rl *RateLimiter) ResetAllRateLimits(ctx context.Context) error {
+	pattern := "rate_limit:*"
+	keys, err := rl.redisClient.Keys(ctx, pattern).Result()
+	if err != nil {
+		return err
+	}
+
+	if len(keys) > 0 {
+		return rl.redisClient.Del(ctx, keys...).Err()
+	}
+	return nil
+}
+
+func (rl *RateLimiter) ResetRateLimitByIP(ctx context.Context, ip string) error {
+	pattern := fmt.Sprintf("rate_limit:*:%s", ip)
+	keys, err := rl.redisClient.Keys(ctx, pattern).Result()
+	if err != nil {
+		return err
+	}
+
+	if len(keys) > 0 {
+		return rl.redisClient.Del(ctx, keys...).Err()
+	}
+	return nil
+}
+
+func (rl *RateLimiter) ResetRateLimitByUser(ctx context.Context, userID int64) error {
+	pattern := fmt.Sprintf("rate_limit:user:%d:*", userID)
+	keys, err := rl.redisClient.Keys(ctx, pattern).Result()
+	if err != nil {
+		return err
+	}
+
+	if len(keys) > 0 {
+		return rl.redisClient.Del(ctx, keys...).Err()
+	}
+	return nil
+}
+
 func (rl *RateLimiter) Close() error {
 	return rl.redisClient.Close()
 }

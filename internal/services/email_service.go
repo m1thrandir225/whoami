@@ -5,12 +5,11 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"net/smtp"
 	"time"
 
 	"github.com/m1thrandir225/whoami/internal/domain"
+	"github.com/m1thrandir225/whoami/internal/mail"
 	"github.com/m1thrandir225/whoami/internal/repositories"
-	"github.com/m1thrandir225/whoami/internal/util"
 )
 
 type EmailService interface {
@@ -22,18 +21,18 @@ type EmailService interface {
 type emailService struct {
 	emailVerificationRepo repositories.EmailVerificationRepository
 	userRepo              repositories.UserRepository
-	config                *util.Config
+	mailService           mail.MailService
 }
 
 func NewEmailService(
 	emailVerificationRepo repositories.EmailVerificationRepository,
 	userRepo repositories.UserRepository,
-	config *util.Config,
+	mailService mail.MailService,
 ) EmailService {
 	return &emailService{
 		emailVerificationRepo: emailVerificationRepo,
 		userRepo:              userRepo,
-		config:                config,
+		mailService:           mailService,
 	}
 }
 
@@ -114,19 +113,7 @@ func (s *emailService) generateVerificationToken() (string, error) {
 }
 
 func (s *emailService) sendEmail(to, subject, body string) error {
-	if s.config.SMTPHost == "" || s.config.SMTPPort == 0 {
-		// In development, just log the email
-		fmt.Printf("=== EMAIL SENT ===\nTo: %s\nSubject: %s\nBody:\n%s\n=== END EMAIL ===\n", to, subject, body)
-		return nil
-	}
-
-	auth := smtp.PlainAuth("", s.config.SMTPUsername, s.config.SMTPPassword, s.config.SMTPHost)
-
-	msg := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s",
-		s.config.SMTPUsername, to, subject, body)
-
-	addr := fmt.Sprintf("%s:%d", s.config.SMTPHost, s.config.SMTPPort)
-	return smtp.SendMail(addr, auth, s.config.SMTPUsername, []string{to}, []byte(msg))
+	return s.mailService.SendMail("whoami@sebastijanzindl.me", to, subject, body)
 }
 
 func (s *emailService) buildVerificationEmailContent(token string) string {

@@ -27,6 +27,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    volumes:
+      - whoami-redis:/data
     restart: unless-stopped
   whoami-migrate:
     build:
@@ -78,3 +80,4 @@ services:
       - "${HTTP_PORT}:${HTTP_PORT}"
 volumes:
   whoami-db:
+  whoami-redis:

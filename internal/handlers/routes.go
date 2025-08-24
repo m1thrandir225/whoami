@@ -109,5 +109,13 @@ func SetupRoutes(router *gin.Engine, handler *HTTPHandler) {
 			email.POST("/verify", handler.VerifyEmail)
 			email.POST("/resend", handler.ResendVerificationEmail)
 		}
+
+		// DDevelopment only routes
+		if handler.config.Environment == "development" {
+			dev := apiV1.Group("/dev")
+			{
+				dev.POST("/reset-rate-limit", handler.ResetRateLimit)
+			}
+		}
 	}
 }

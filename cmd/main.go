@@ -15,6 +15,7 @@ import (
 	"github.com/m1thrandir225/whoami/cmd/pkg/redis"
 	db "github.com/m1thrandir225/whoami/internal/db/sqlc"
 	"github.com/m1thrandir225/whoami/internal/handlers"
+	"github.com/m1thrandir225/whoami/internal/mail"
 	"github.com/m1thrandir225/whoami/internal/oauth"
 	"github.com/m1thrandir225/whoami/internal/repositories"
 	"github.com/m1thrandir225/whoami/internal/security"
@@ -73,6 +74,11 @@ func main() {
 	 */
 	dbStore := db.NewStore(connPool)
 
+	/**
+	* Create mail service
+	 */
+	mailService := mail.NewResendMailer(config.SMTPHost, config.SMTPPort, config.SMTPUsername, config.SMTPPassword)
+
 	/*
 	* Repositories
 	 */
@@ -127,13 +133,13 @@ func main() {
 	emailService := services.NewEmailService(
 		emailVerificationRepository,
 		userRepository,
-		&config,
+		mailService,
 	)
 	passwordResetService := services.NewPasswordResetService(
 		passwordResetRepository,
 		userRepository,
 		passwordSecurityService,
-		&config,
+		mailService,
 	)
 	auditService := services.NewAuditService(auditLogsRepository)
 	tokenBlacklist := security.NewTokenBlacklist(redisClient)

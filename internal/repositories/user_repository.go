@@ -35,6 +35,7 @@ func (r *userRepository) toDomain(dbUser db.User, privacySettings domain.Privacy
 	return &domain.User{
 		ID:                dbUser.ID,
 		Email:             dbUser.Email,
+		Username:          dbUser.Username,
 		EmailVerified:     dbUser.EmailVerified,
 		Password:          dbUser.PasswordHash,
 		PasswordChangedAt: dbUser.PasswordChangedAt,
