@@ -47,19 +47,31 @@ func main() {
 	}
 
 	/*
-	* Users
+	* Repositories
 	 */
 	userRepository := repositories.NewUserRepository(dbStore)
-
-	userService := services.NewUserService(userRepository)
-	/*
-	* Security
-	 */
 	accountLockoutRepository := repositories.NewAccountLockoutRepository(dbStore)
 	suspiciousActivityRepository := repositories.NewSuspiciousActivityRepository(dbStore)
-	securityService := services.NewSecurityService(accountLockoutRepository, suspiciousActivityRepository, userRepository)
+	passwordHistoryRepository := repositories.NewPasswordHistoryRepository(dbStore)
 
-	handler := handlers.NewHTTPHandler(userService, securityService, tokenMaker, rateLimiter, config)
+	/*
+	* Services
+	 */
+	userService := services.NewUserService(userRepository)
+	securityService := services.NewSecurityService(accountLockoutRepository, suspiciousActivityRepository, userRepository)
+	passwordSecurityService := services.NewPasswordSecurityService(passwordHistoryRepository, userRepository)
+
+	/**
+	* HTTP
+	 */
+	handler := handlers.NewHTTPHandler(
+		userService,
+		securityService,
+		passwordSecurityService,
+		tokenMaker,
+		rateLimiter,
+		config,
+	)
 
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()

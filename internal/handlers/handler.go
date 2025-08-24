@@ -8,25 +8,28 @@ import (
 )
 
 type HTTPHandler struct {
-	userService     services.UserService
-	securityService services.SecurityService
-	tokenMaker      security.TokenMaker
-	config          *util.Config
-	rateLimiter     *security.RateLimiter
+	userService             services.UserService
+	securityService         services.SecurityService
+	passwordSecurityService services.PasswordSecurityService
+	tokenMaker              security.TokenMaker
+	config                  *util.Config
+	rateLimiter             *security.RateLimiter
 }
 
 func NewHTTPHandler(
 	userService services.UserService,
 	securityService services.SecurityService,
+	passwordSecurityService services.PasswordSecurityService,
 	tokenMaker security.TokenMaker,
 	rateLimiter *security.RateLimiter,
 	config util.Config,
 ) *HTTPHandler {
 	return &HTTPHandler{
-		userService:     userService,
-		securityService: securityService,
-		tokenMaker:      tokenMaker,
-		config:          &config,
-		rateLimiter:     rateLimiter,
+		userService:             userService,
+		securityService:         securityService,
+		passwordSecurityService: passwordSecurityService,
+		tokenMaker:              tokenMaker,
+		config:                  &config,
+		rateLimiter:             rateLimiter,
 	}
 }

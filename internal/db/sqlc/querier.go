@@ -13,8 +13,10 @@ import (
 
 type Querier interface {
 	ActivateUser(ctx context.Context, id int64) error
+	CheckPasswordInHistory(ctx context.Context, arg CheckPasswordInHistoryParams) (int64, error)
 	CleanupExpiredRefreshTokens(ctx context.Context) error
 	CreateAccountLockout(ctx context.Context, arg CreateAccountLockoutParams) (AccountLockout, error)
+	CreatePasswordHistory(ctx context.Context, arg CreatePasswordHistoryParams) (PasswordHistory, error)
 	CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) (RefreshToken, error)
 	CreateSuspiciousActivity(ctx context.Context, arg CreateSuspiciousActivityParams) (SuspiciousActivity, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
@@ -22,10 +24,12 @@ type Querier interface {
 	DeactivateUser(ctx context.Context, id int64) error
 	DeleteAccountLockoutByID(ctx context.Context, id int64) error
 	DeleteExpiredLockouts(ctx context.Context) error
+	DeleteOldPasswordHistory(ctx context.Context, userID int64) error
 	GetAccountLockoutByIP(ctx context.Context, ipAddress *netip.Addr) (AccountLockout, error)
 	GetAccountLockoutByUserAndIP(ctx context.Context, arg GetAccountLockoutByUserAndIPParams) (AccountLockout, error)
 	GetAccountLockoutByUserID(ctx context.Context, userID int64) (AccountLockout, error)
 	GetActiveRefreshTokensByUser(ctx context.Context, userID int64) ([]RefreshToken, error)
+	GetPasswordHistoryByUserID(ctx context.Context, arg GetPasswordHistoryByUserIDParams) ([]PasswordHistory, error)
 	GetRefreshToken(ctx context.Context, tokenHash string) (RefreshToken, error)
 	GetSuspiciousActivitiesByIP(ctx context.Context, arg GetSuspiciousActivitiesByIPParams) ([]SuspiciousActivity, error)
 	GetSuspiciousActivitiesByUserID(ctx context.Context, arg GetSuspiciousActivitiesByUserIDParams) ([]SuspiciousActivity, error)
