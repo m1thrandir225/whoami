@@ -14,5 +14,8 @@ type PasswordReset struct {
 }
 
 type CreatePasswordResetAction struct {
-	UserID int64
+	UserID     int64
+	TokenHash  string
+	HotpSecret string
+	Counter    int64
 }

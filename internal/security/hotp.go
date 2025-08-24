@@ -35,7 +35,7 @@ func ValidateHOTP(secret string, providedOTP string, counter uint64) (bool, erro
 	return valid, nil
 }
 
-func GenerateOTPSecret() (string, error) {
+func GenerateHOTPSecret() (string, error) {
 	secret := make([]byte, 20)
 
 	_, err := rand.Read(secret)

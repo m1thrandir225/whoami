@@ -54,14 +54,32 @@ func main() {
 	suspiciousActivityRepository := repositories.NewSuspiciousActivityRepository(dbStore)
 	passwordHistoryRepository := repositories.NewPasswordHistoryRepository(dbStore)
 	emailVerificationRepository := repositories.NewEmailVerificationRepository(dbStore)
+	passwordResetRepository := repositories.NewPasswordResetRepository(dbStore)
 
 	/*
 	* Services
 	 */
 	userService := services.NewUserService(userRepository)
-	securityService := services.NewSecurityService(accountLockoutRepository, suspiciousActivityRepository, userRepository)
-	passwordSecurityService := services.NewPasswordSecurityService(passwordHistoryRepository, userRepository)
-	emailService := services.NewEmailService(emailVerificationRepository, userRepository, &config)
+	securityService := services.NewSecurityService(
+		accountLockoutRepository,
+		suspiciousActivityRepository,
+		userRepository,
+	)
+	passwordSecurityService := services.NewPasswordSecurityService(
+		passwordHistoryRepository,
+		userRepository,
+	)
+	emailService := services.NewEmailService(
+		emailVerificationRepository,
+		userRepository,
+		&config,
+	)
+	passwordResetService := services.NewPasswordResetService(
+		passwordResetRepository,
+		userRepository,
+		passwordSecurityService,
+		&config,
+	)
 	/**
 	* HTTP
 	 */
@@ -69,6 +87,7 @@ func main() {
 		userService,
 		securityService,
 		passwordSecurityService,
+		passwordResetService,
 		emailService,
 		tokenMaker,
 		rateLimiter,

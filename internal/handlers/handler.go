@@ -11,6 +11,7 @@ type HTTPHandler struct {
 	userService             services.UserService
 	securityService         services.SecurityService
 	passwordSecurityService services.PasswordSecurityService
+	passwordResetService    services.PasswordResetService
 	emailService            services.EmailService
 	tokenMaker              security.TokenMaker
 	config                  *util.Config
@@ -21,6 +22,7 @@ func NewHTTPHandler(
 	userService services.UserService,
 	securityService services.SecurityService,
 	passwordSecurityService services.PasswordSecurityService,
+	passwordResetService services.PasswordResetService,
 	emailService services.EmailService,
 	tokenMaker security.TokenMaker,
 	rateLimiter *security.RateLimiter,
@@ -30,6 +32,7 @@ func NewHTTPHandler(
 		userService:             userService,
 		securityService:         securityService,
 		passwordSecurityService: passwordSecurityService,
+		passwordResetService:    passwordResetService,
 		emailService:            emailService,
 		tokenMaker:              tokenMaker,
 		config:                  &config,

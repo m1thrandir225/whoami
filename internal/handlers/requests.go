@@ -35,3 +35,16 @@ type resolveSuspiciousActivityRequest struct {
 type verifyEmailRequest struct {
 	Token string `json:"token" binding:"required"`
 }
+
+type requestPasswordResetRequest struct {
+	Email string `json:"email" binding:"required"`
+}
+
+type resetPasswordRequest struct {
+	Token       string `json:"token" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required"`
+}
+
+type verifyResetTokenRequest struct {
+	Token string `json:"token" binding:"required"`
+}

@@ -17,6 +17,14 @@ func SetupRoutes(router *gin.Engine, handler *HTTPHandler) {
 			handler.rateLimiter.RateLimitMiddleware(security.AuthRateLimit),
 			handler.Login)
 
+		passwordReset := apiV1.Group("/password-reset")
+		passwordReset.Use(handler.rateLimiter.RateLimitMiddleware(security.PasswordResetRateLimit))
+		{
+			passwordReset.POST("/request", handler.RequestPasswordReset)
+			passwordReset.POST("/reset", handler.ResetPassword)
+			passwordReset.POST("/verify", handler.VerifyResetToken)
+		}
+
 		protected := apiV1.Group("/")
 		protected.Use(AuthMiddleware(handler.tokenMaker))
 		protected.Use(handler.rateLimiter.UserRateLimitMiddleware(security.DefaultRateLimit))

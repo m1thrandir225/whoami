@@ -15,7 +15,6 @@ import (
 
 type EmailService interface {
 	SendVerificationEmail(ctx context.Context, userID int64, email string) error
-	SendPasswordResetEmail(ctx context.Context, userID int64, email string) error
 	VerifyEmailToken(ctx context.Context, token string) error
 	ResendVerificationEmail(ctx context.Context, userID int64, email string) error
 }
@@ -56,26 +55,6 @@ func (s *emailService) SendVerificationEmail(ctx context.Context, userID int64, 
 
 	// Send email
 	return s.sendEmail(email, "Email Verification", s.buildVerificationEmailContent(token))
-}
-
-func (s *emailService) SendPasswordResetEmail(ctx context.Context, userID int64, email string) error {
-	// Generate reset token
-	token, err := s.generateVerificationToken()
-	if err != nil {
-		return fmt.Errorf("failed to generate reset token: %v", err)
-	}
-
-	// Store reset token
-	err = s.emailVerificationRepo.CreateEmailVerification(ctx, domain.CreateEmailVerificationAction{
-		UserID: userID,
-		Token:  token,
-	})
-	if err != nil {
-		return fmt.Errorf("failed to store reset token: %v", err)
-	}
-
-	// Send email
-	return s.sendEmail(email, "Password Reset", s.buildPasswordResetEmailContent(token))
 }
 
 func (s *emailService) VerifyEmailToken(ctx context.Context, token string) error {
@@ -167,23 +146,4 @@ If you didn't create an account, you can safely ignore this email.
 Best regards,
 The Whoami Team
 `, verificationURL)
-}
-
-func (s *emailService) buildPasswordResetEmailContent(token string) string {
-	resetURL := fmt.Sprintf("%s/reset-password?token=%s", "", token)
-
-	return fmt.Sprintf(`
-Password Reset Request
-
-You requested a password reset. Click the link below to reset your password:
-
-%s
-
-This link will expire in 1 hour.
-
-If you didn't request a password reset, you can safely ignore this email.
-
-Best regards,
-The Whoami Team
-`, resetURL)
 }

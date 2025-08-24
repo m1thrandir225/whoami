@@ -18,6 +18,7 @@ type Querier interface {
 	CreateAccountLockout(ctx context.Context, arg CreateAccountLockoutParams) (AccountLockout, error)
 	CreateEmailVerification(ctx context.Context, arg CreateEmailVerificationParams) (EmailVerification, error)
 	CreatePasswordHistory(ctx context.Context, arg CreatePasswordHistoryParams) (PasswordHistory, error)
+	CreatePasswordReset(ctx context.Context, arg CreatePasswordResetParams) (PasswordReset, error)
 	CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) (RefreshToken, error)
 	CreateSuspiciousActivity(ctx context.Context, arg CreateSuspiciousActivityParams) (SuspiciousActivity, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
@@ -26,6 +27,7 @@ type Querier interface {
 	DeleteAccountLockoutByID(ctx context.Context, id int64) error
 	DeleteExpiredLockouts(ctx context.Context) error
 	DeleteOldPasswordHistory(ctx context.Context, userID int64) error
+	DeleteUnusedPasswordResets(ctx context.Context, userID int64) error
 	DeleteUnverifiedTokens(ctx context.Context, userID int64) error
 	GetAccountLockoutByIP(ctx context.Context, ipAddress *netip.Addr) (AccountLockout, error)
 	GetAccountLockoutByUserAndIP(ctx context.Context, arg GetAccountLockoutByUserAndIPParams) (AccountLockout, error)
@@ -33,12 +35,14 @@ type Querier interface {
 	GetActiveRefreshTokensByUser(ctx context.Context, userID int64) ([]RefreshToken, error)
 	GetEmailVerificationByToken(ctx context.Context, tokenHash string) (EmailVerification, error)
 	GetPasswordHistoryByUserID(ctx context.Context, arg GetPasswordHistoryByUserIDParams) ([]PasswordHistory, error)
+	GetPasswordResetByToken(ctx context.Context, tokenHash string) (PasswordReset, error)
 	GetRefreshToken(ctx context.Context, tokenHash string) (RefreshToken, error)
 	GetSuspiciousActivitiesByIP(ctx context.Context, arg GetSuspiciousActivitiesByIPParams) ([]SuspiciousActivity, error)
 	GetSuspiciousActivitiesByUserID(ctx context.Context, arg GetSuspiciousActivitiesByUserIDParams) ([]SuspiciousActivity, error)
 	GetSuspiciousActivityCountByIP(ctx context.Context, ipAddress netip.Addr) (int64, error)
 	GetSuspiciousActivityCountByUser(ctx context.Context, userID pgtype.Int8) (int64, error)
 	GetUnresolvedSuspiciousActivities(ctx context.Context, limit int32) ([]SuspiciousActivity, error)
+	GetUnusedPasswordResets(ctx context.Context, userID int64) ([]PasswordReset, error)
 	GetUnverifiedVerifications(ctx context.Context, userID int64) ([]EmailVerification, error)
 	GetUser(ctx context.Context, id int64) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
@@ -47,6 +51,7 @@ type Querier interface {
 	GetUserWithProfile(ctx context.Context, id int64) (GetUserWithProfileRow, error)
 	MarkEmailVerificationAsUsed(ctx context.Context, id int64) error
 	MarkEmailVerified(ctx context.Context, id int64) error
+	MarkPasswordResetAsUsed(ctx context.Context, id int64) error
 	ResolveSuspiciousActivity(ctx context.Context, id int64) error
 	RevokeAllUserRefreshTokens(ctx context.Context, userID int64) error
 	RevokeRefreshToken(ctx context.Context, tokenHash string) error
