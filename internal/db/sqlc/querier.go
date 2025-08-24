@@ -16,6 +16,7 @@ type Querier interface {
 	CheckPasswordInHistory(ctx context.Context, arg CheckPasswordInHistoryParams) (int64, error)
 	CleanupExpiredRefreshTokens(ctx context.Context) error
 	CreateAccountLockout(ctx context.Context, arg CreateAccountLockoutParams) (AccountLockout, error)
+	CreateEmailVerification(ctx context.Context, arg CreateEmailVerificationParams) (EmailVerification, error)
 	CreatePasswordHistory(ctx context.Context, arg CreatePasswordHistoryParams) (PasswordHistory, error)
 	CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) (RefreshToken, error)
 	CreateSuspiciousActivity(ctx context.Context, arg CreateSuspiciousActivityParams) (SuspiciousActivity, error)
@@ -25,10 +26,12 @@ type Querier interface {
 	DeleteAccountLockoutByID(ctx context.Context, id int64) error
 	DeleteExpiredLockouts(ctx context.Context) error
 	DeleteOldPasswordHistory(ctx context.Context, userID int64) error
+	DeleteUnverifiedTokens(ctx context.Context, userID int64) error
 	GetAccountLockoutByIP(ctx context.Context, ipAddress *netip.Addr) (AccountLockout, error)
 	GetAccountLockoutByUserAndIP(ctx context.Context, arg GetAccountLockoutByUserAndIPParams) (AccountLockout, error)
 	GetAccountLockoutByUserID(ctx context.Context, userID int64) (AccountLockout, error)
 	GetActiveRefreshTokensByUser(ctx context.Context, userID int64) ([]RefreshToken, error)
+	GetEmailVerificationByToken(ctx context.Context, tokenHash string) (EmailVerification, error)
 	GetPasswordHistoryByUserID(ctx context.Context, arg GetPasswordHistoryByUserIDParams) ([]PasswordHistory, error)
 	GetRefreshToken(ctx context.Context, tokenHash string) (RefreshToken, error)
 	GetSuspiciousActivitiesByIP(ctx context.Context, arg GetSuspiciousActivitiesByIPParams) ([]SuspiciousActivity, error)
@@ -36,11 +39,13 @@ type Querier interface {
 	GetSuspiciousActivityCountByIP(ctx context.Context, ipAddress netip.Addr) (int64, error)
 	GetSuspiciousActivityCountByUser(ctx context.Context, userID pgtype.Int8) (int64, error)
 	GetUnresolvedSuspiciousActivities(ctx context.Context, limit int32) ([]SuspiciousActivity, error)
+	GetUnverifiedVerifications(ctx context.Context, userID int64) ([]EmailVerification, error)
 	GetUser(ctx context.Context, id int64) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
 	GetUserProfile(ctx context.Context, userID int64) (UserProfile, error)
 	GetUserWithProfile(ctx context.Context, id int64) (GetUserWithProfileRow, error)
+	MarkEmailVerificationAsUsed(ctx context.Context, id int64) error
 	MarkEmailVerified(ctx context.Context, id int64) error
 	ResolveSuspiciousActivity(ctx context.Context, id int64) error
 	RevokeAllUserRefreshTokens(ctx context.Context, userID int64) error

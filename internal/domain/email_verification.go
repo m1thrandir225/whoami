@@ -10,3 +10,8 @@ type EmailVerification struct {
 	CreatedAt *time.Time `json:"created_at"`
 	UsedAt    *time.Time `json:"used_at"`
 }
+
+type CreateEmailVerificationAction struct {
+	UserID int64
+	Token  string
+}

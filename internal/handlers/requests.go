@@ -31,3 +31,7 @@ type updatePasswordRequest struct {
 type resolveSuspiciousActivityRequest struct {
 	ActivityID int64 `json:"activity_id" binding:"required"`
 }
+
+type verifyEmailRequest struct {
+	Token string `json:"token" binding:"required"`
+}

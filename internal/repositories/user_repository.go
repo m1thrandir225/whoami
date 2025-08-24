@@ -14,6 +14,7 @@ type UserRepository interface {
 	GetUserByEmail(ctx context.Context, email string) (*domain.User, error)
 	GetUserByID(ctx context.Context, id int64) (*domain.User, error)
 	UpdateUser(ctx context.Context, user *domain.User) error
+	MarkEmailVerified(ctx context.Context, id int64) error
 	UpdateUserPrivacySettings(ctx context.Context, id int64, privacySettings domain.PrivacySettings) error
 	DeactivateUser(ctx context.Context, id int64) error
 	ActivateUser(ctx context.Context, id int64) error
@@ -131,4 +132,8 @@ func (repo *userRepository) ActivateUser(ctx context.Context, id int64) error {
 
 func (repo *userRepository) UpdateLastLogin(ctx context.Context, id int64) error {
 	return repo.store.UpdateLastLogin(ctx, id)
+}
+
+func (repo *userRepository) MarkEmailVerified(ctx context.Context, id int64) error {
+	return repo.store.MarkEmailVerified(ctx, id)
 }

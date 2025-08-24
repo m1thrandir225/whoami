@@ -43,7 +43,7 @@ SET email_verified = TRUE, updated_at = NOW()
 WHERE id = $1;
 
 -- name: UpdateUserPrivacySettings :exec
-UPDATE users 
+UPDATE users
 SET privacy_settings = $2, updated_at = NOW()
 WHERE id = $1;
 
@@ -58,14 +58,14 @@ SET active = TRUE, updated_at = NOW()
 WHERE id = $1;
 
 -- name: UpdateLastLogin :exec
-UPDATE users 
+UPDATE users
 SET last_login_at = NOW(), updated_at = NOW()
 WHERE id = $1;
 
 -- name: GetUserWithProfile :one
-SELECT u.id, u.email, u.username, u.email_verified, u.active, u.role, u.privacy_settings,  u.created_at, 
+SELECT u.id, u.email, u.username, u.email_verified, u.active, u.role, u.privacy_settings,  u.created_at,
     u.last_login_at, u.updated_at, up.first_name, up.last_name, up.phone, up.bio
-FROM users u 
+FROM users u
 LEFT JOIN user_profiles up ON u.id = up.user_id
 WHERE u.id = $1;
 

@@ -53,6 +53,7 @@ func main() {
 	accountLockoutRepository := repositories.NewAccountLockoutRepository(dbStore)
 	suspiciousActivityRepository := repositories.NewSuspiciousActivityRepository(dbStore)
 	passwordHistoryRepository := repositories.NewPasswordHistoryRepository(dbStore)
+	emailVerificationRepository := repositories.NewEmailVerificationRepository(dbStore)
 
 	/*
 	* Services
@@ -60,7 +61,7 @@ func main() {
 	userService := services.NewUserService(userRepository)
 	securityService := services.NewSecurityService(accountLockoutRepository, suspiciousActivityRepository, userRepository)
 	passwordSecurityService := services.NewPasswordSecurityService(passwordHistoryRepository, userRepository)
-
+	emailService := services.NewEmailService(emailVerificationRepository, userRepository, &config)
 	/**
 	* HTTP
 	 */
@@ -68,6 +69,7 @@ func main() {
 		userService,
 		securityService,
 		passwordSecurityService,
+		emailService,
 		tokenMaker,
 		rateLimiter,
 		config,

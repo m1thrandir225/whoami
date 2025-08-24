@@ -48,6 +48,9 @@ func (h *HTTPHandler) Register(ctx *gin.Context) {
 		fmt.Printf("Warning: Failed to add initial password to history: %v\n", err)
 	}
 
+	if err := h.emailService.SendVerificationEmail(ctx, user.ID, user.Email); err != nil {
+		fmt.Printf("Warning: Failed to send verification email: %v\n", err)
+	}
 	accessToken, _, err := h.tokenMaker.CreateToken(user.ID, h.config.AccessTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -301,13 +304,42 @@ func (h *HTTPHandler) RefreshToken(ctx *gin.Context) {
 }
 
 func (h *HTTPHandler) VerifyEmail(ctx *gin.Context) {
-	//TODO: implement
+	var req verifyEmailRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	if err := h.emailService.VerifyEmailToken(ctx, req.Token); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
 
 	ctx.JSON(http.StatusOK, messageResponse("Email verified successfully"))
 }
 
 func (h *HTTPHandler) ResendVerificationEmail(ctx *gin.Context) {
-	//TODO: implement
+	payload, err := GetCurrentUserPayload(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	user, err := h.userService.GetUserByID(ctx, payload.UserID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	if user.EmailVerified {
+		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("email already verified")))
+		return
+	}
+
+	if err := h.emailService.ResendVerificationEmail(ctx, user.ID, user.Email); err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
 
 	ctx.JSON(http.StatusOK, messageResponse("Verification email resent successfully"))
 }
