@@ -87,7 +87,7 @@ func (h *HTTPHandler) Login(ctx *gin.Context) {
 	if err != nil {
 		// Record failed login attempt even if user doesn't exist
 		// This prevents user enumeration attacks
-		h.securityService.RecordFailedLogin(ctx, 0, clientIP, userAgent)
+		h.securityService.RecordFailedLogin(ctx, 0, requestData.Email, clientIP, userAgent)
 		ctx.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid credentials")))
 		return
 	}
@@ -101,13 +101,13 @@ func (h *HTTPHandler) Login(ctx *gin.Context) {
 	// Verify password
 	if err := util.ComparePassword(user.Password, requestData.Password); err != nil {
 		// Record failed login attempt
-		h.securityService.RecordFailedLogin(ctx, user.ID, clientIP, userAgent)
+		h.securityService.RecordFailedLogin(ctx, user.ID, requestData.Email, clientIP, userAgent)
 		ctx.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid credentials")))
 		return
 	}
 
 	// Record successful login
-	if err := h.securityService.RecordSuccessfulLogin(ctx, user.ID, clientIP, userAgent); err != nil {
+	if err := h.securityService.RecordSuccessfulLogin(ctx, user.ID, requestData.Email, clientIP, userAgent); err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}

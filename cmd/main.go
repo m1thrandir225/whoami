@@ -81,14 +81,16 @@ func main() {
 	passwordHistoryRepository := repositories.NewPasswordHistoryRepository(dbStore)
 	emailVerificationRepository := repositories.NewEmailVerificationRepository(dbStore)
 	passwordResetRepository := repositories.NewPasswordResetRepository(dbStore)
+	loginAttemptsRepository := repositories.NewLoginAttemptsRepository(dbStore)
 
 	/*
 	* Services
 	 */
 	userService := services.NewUserService(userRepository)
 	securityService := services.NewSecurityService(
-		accountLockoutRepository,
+		loginAttemptsRepository,
 		suspiciousActivityRepository,
+		accountLockoutRepository,
 		userRepository,
 	)
 	passwordSecurityService := services.NewPasswordSecurityService(
@@ -116,6 +118,7 @@ func main() {
 		userService,
 		securityService,
 		passwordSecurityService,
+
 		passwordResetService,
 		emailService,
 		tokenMaker,

@@ -17,6 +17,7 @@ type Querier interface {
 	CleanupExpiredRefreshTokens(ctx context.Context) error
 	CreateAccountLockout(ctx context.Context, arg CreateAccountLockoutParams) (AccountLockout, error)
 	CreateEmailVerification(ctx context.Context, arg CreateEmailVerificationParams) (EmailVerification, error)
+	CreateLoginAttempt(ctx context.Context, arg CreateLoginAttemptParams) (LoginAttempt, error)
 	CreatePasswordHistory(ctx context.Context, arg CreatePasswordHistoryParams) (PasswordHistory, error)
 	CreatePasswordReset(ctx context.Context, arg CreatePasswordResetParams) (PasswordReset, error)
 	CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) (RefreshToken, error)
@@ -26,6 +27,7 @@ type Querier interface {
 	DeactivateUser(ctx context.Context, id int64) error
 	DeleteAccountLockoutByID(ctx context.Context, id int64) error
 	DeleteExpiredLockouts(ctx context.Context) error
+	DeleteOldLoginAttempts(ctx context.Context) error
 	DeleteOldPasswordHistory(ctx context.Context, userID int64) error
 	DeleteUnusedPasswordResets(ctx context.Context, userID int64) error
 	DeleteUnverifiedTokens(ctx context.Context, userID int64) error
@@ -34,8 +36,17 @@ type Querier interface {
 	GetAccountLockoutByUserID(ctx context.Context, userID int64) (AccountLockout, error)
 	GetActiveRefreshTokensByUser(ctx context.Context, userID int64) ([]RefreshToken, error)
 	GetEmailVerificationByToken(ctx context.Context, tokenHash string) (EmailVerification, error)
+	GetFailedLoginAttemptsByEmail(ctx context.Context, arg GetFailedLoginAttemptsByEmailParams) ([]LoginAttempt, error)
+	GetFailedLoginAttemptsByIP(ctx context.Context, arg GetFailedLoginAttemptsByIPParams) ([]LoginAttempt, error)
+	GetFailedLoginAttemptsByUserID(ctx context.Context, arg GetFailedLoginAttemptsByUserIDParams) ([]LoginAttempt, error)
+	GetLoginAttemptsByEmail(ctx context.Context, arg GetLoginAttemptsByEmailParams) ([]LoginAttempt, error)
+	GetLoginAttemptsByIP(ctx context.Context, arg GetLoginAttemptsByIPParams) ([]LoginAttempt, error)
+	GetLoginAttemptsByUserID(ctx context.Context, arg GetLoginAttemptsByUserIDParams) ([]LoginAttempt, error)
 	GetPasswordHistoryByUserID(ctx context.Context, arg GetPasswordHistoryByUserIDParams) ([]PasswordHistory, error)
 	GetPasswordResetByToken(ctx context.Context, tokenHash string) (PasswordReset, error)
+	GetRecentFailedAttemptsByEmail(ctx context.Context, email string) ([]LoginAttempt, error)
+	GetRecentFailedAttemptsByIP(ctx context.Context, ipAddress netip.Addr) ([]LoginAttempt, error)
+	GetRecentFailedAttemptsByUserID(ctx context.Context, userID pgtype.Int8) ([]LoginAttempt, error)
 	GetRefreshToken(ctx context.Context, tokenHash string) (RefreshToken, error)
 	GetSuspiciousActivitiesByIP(ctx context.Context, arg GetSuspiciousActivitiesByIPParams) ([]SuspiciousActivity, error)
 	GetSuspiciousActivitiesByUserID(ctx context.Context, arg GetSuspiciousActivitiesByUserIDParams) ([]SuspiciousActivity, error)
