@@ -33,6 +33,13 @@ func SetupRoutes(router *gin.Engine, handler *HTTPHandler) {
 				user.PUT("/:id/privacy-settings", handler.UpdateUserPrivacySettings)
 				user.POST("/update-password", handler.UpdatePassword)
 			}
+
+			security := protected.Group("/security")
+			{
+				security.GET("/activities", handler.GetSuspiciousActivities)
+				security.POST("/activities/resolve", handler.ResolveSuspiciousActivity)
+				security.POST("/cleanup", handler.CleanupExpiredLockouts)
+			}
 		}
 
 		email := apiV1.Group("/email")

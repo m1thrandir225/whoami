@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/m1thrandir225/whoami/internal/domain"
+	"github.com/m1thrandir225/whoami/internal/security"
 	"github.com/m1thrandir225/whoami/internal/util"
 )
 
@@ -29,6 +30,7 @@ func (h *HTTPHandler) Register(ctx *gin.Context) {
 		PrivacySettings: *requestData.PrivacySettings,
 		Password:        passwordHash,
 	})
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -39,6 +41,7 @@ func (h *HTTPHandler) Register(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
 	refreshToken, _, err := h.tokenMaker.CreateToken(user.ID, h.config.RefreshTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -61,15 +64,39 @@ func (h *HTTPHandler) Login(ctx *gin.Context) {
 		return
 	}
 
+	clientIP := security.GetClientIP(ctx)
+	userAgent := ctx.GetHeader("User-Agent")
+
 	user, err := h.userService.GetUserByEmail(ctx, requestData.Email)
 	if err != nil {
+		h.securityService.RecordFailedLogin(ctx, user.ID, clientIP, userAgent)
 		ctx.JSON(http.StatusNotFound, errorResponse(err))
 		return
 	}
 
+	//check if the account is locked out
+	if err := h.securityService.CheckAccountLockout(ctx, user.ID, clientIP); err != nil {
+		ctx.JSON(http.StatusForbidden, errorResponse(err))
+		return
+	}
+
+	//verify the password
 	err = util.ComparePassword(user.Password, requestData.Password)
 	if err != nil {
+		h.securityService.RecordFailedLogin(ctx, user.ID, clientIP, userAgent)
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	//record successful login & update last login time
+	err = h.securityService.RecordSuccessfulLogin(ctx, user.ID, clientIP, userAgent)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	err = h.userService.UpdateLastLogin(ctx, user.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 

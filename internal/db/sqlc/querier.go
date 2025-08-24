@@ -6,23 +6,39 @@ package db
 
 import (
 	"context"
+	"net/netip"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
 	ActivateUser(ctx context.Context, id int64) error
 	CleanupExpiredRefreshTokens(ctx context.Context) error
+	CreateAccountLockout(ctx context.Context, arg CreateAccountLockoutParams) (AccountLockout, error)
 	CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) (RefreshToken, error)
+	CreateSuspiciousActivity(ctx context.Context, arg CreateSuspiciousActivityParams) (SuspiciousActivity, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateUserProfile(ctx context.Context, arg CreateUserProfileParams) (UserProfile, error)
 	DeactivateUser(ctx context.Context, id int64) error
+	DeleteAccountLockoutByID(ctx context.Context, id int64) error
+	DeleteExpiredLockouts(ctx context.Context) error
+	GetAccountLockoutByIP(ctx context.Context, ipAddress *netip.Addr) (AccountLockout, error)
+	GetAccountLockoutByUserAndIP(ctx context.Context, arg GetAccountLockoutByUserAndIPParams) (AccountLockout, error)
+	GetAccountLockoutByUserID(ctx context.Context, userID int64) (AccountLockout, error)
 	GetActiveRefreshTokensByUser(ctx context.Context, userID int64) ([]RefreshToken, error)
 	GetRefreshToken(ctx context.Context, tokenHash string) (RefreshToken, error)
+	GetSuspiciousActivitiesByIP(ctx context.Context, arg GetSuspiciousActivitiesByIPParams) ([]SuspiciousActivity, error)
+	GetSuspiciousActivitiesByUserID(ctx context.Context, arg GetSuspiciousActivitiesByUserIDParams) ([]SuspiciousActivity, error)
+	GetSuspiciousActivityCountByIP(ctx context.Context, ipAddress netip.Addr) (int64, error)
+	GetSuspiciousActivityCountByUser(ctx context.Context, userID pgtype.Int8) (int64, error)
+	GetUnresolvedSuspiciousActivities(ctx context.Context, limit int32) ([]SuspiciousActivity, error)
 	GetUser(ctx context.Context, id int64) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
 	GetUserProfile(ctx context.Context, userID int64) (UserProfile, error)
 	GetUserWithProfile(ctx context.Context, id int64) (GetUserWithProfileRow, error)
 	MarkEmailVerified(ctx context.Context, id int64) error
+	ResolveSuspiciousActivity(ctx context.Context, id int64) error
 	RevokeAllUserRefreshTokens(ctx context.Context, userID int64) error
 	RevokeRefreshToken(ctx context.Context, tokenHash string) error
 	UpdateLastLogin(ctx context.Context, id int64) error

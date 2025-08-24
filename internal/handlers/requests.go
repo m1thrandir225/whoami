@@ -27,3 +27,7 @@ type updatePasswordRequest struct {
 	CurrentPassword string `json:"current_password"`
 	NewPassword     string `json:"new_password"`
 }
+
+type resolveSuspiciousActivityRequest struct {
+	ActivityID int64 `json:"activity_id" binding:"required"`
+}
