@@ -17,6 +17,7 @@ type Querier interface {
 	CleanupExpiredRefreshTokens(ctx context.Context) error
 	CreateAccountLockout(ctx context.Context, arg CreateAccountLockoutParams) (AccountLockout, error)
 	CreateAuditLog(ctx context.Context, arg CreateAuditLogParams) (AuditLog, error)
+	CreateDataExport(ctx context.Context, arg CreateDataExportParams) (DataExport, error)
 	CreateEmailVerification(ctx context.Context, arg CreateEmailVerificationParams) (EmailVerification, error)
 	CreateLoginAttempt(ctx context.Context, arg CreateLoginAttemptParams) (LoginAttempt, error)
 	CreatePasswordHistory(ctx context.Context, arg CreatePasswordHistoryParams) (PasswordHistory, error)
@@ -24,15 +25,20 @@ type Querier interface {
 	CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) (RefreshToken, error)
 	CreateSuspiciousActivity(ctx context.Context, arg CreateSuspiciousActivityParams) (SuspiciousActivity, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	CreateUserDevice(ctx context.Context, arg CreateUserDeviceParams) (UserDevice, error)
 	CreateUserProfile(ctx context.Context, arg CreateUserProfileParams) (UserProfile, error)
 	DeactivateUser(ctx context.Context, id int64) error
 	DeleteAccountLockoutByID(ctx context.Context, id int64) error
+	DeleteAllUserDevices(ctx context.Context, userID int64) error
+	DeleteDataExport(ctx context.Context, arg DeleteDataExportParams) error
+	DeleteExpiredDataExports(ctx context.Context) error
 	DeleteExpiredLockouts(ctx context.Context) error
 	DeleteOldAuditLogs(ctx context.Context) error
 	DeleteOldLoginAttempts(ctx context.Context) error
 	DeleteOldPasswordHistory(ctx context.Context, userID int64) error
 	DeleteUnusedPasswordResets(ctx context.Context, userID int64) error
 	DeleteUnverifiedTokens(ctx context.Context, userID int64) error
+	DeleteUserDevice(ctx context.Context, arg DeleteUserDeviceParams) error
 	GetAccountLockoutByIP(ctx context.Context, ipAddress *netip.Addr) (AccountLockout, error)
 	GetAccountLockoutByUserAndIP(ctx context.Context, arg GetAccountLockoutByUserAndIPParams) (AccountLockout, error)
 	GetAccountLockoutByUserID(ctx context.Context, userID int64) (AccountLockout, error)
@@ -43,6 +49,8 @@ type Querier interface {
 	GetAuditLogsByResourceID(ctx context.Context, arg GetAuditLogsByResourceIDParams) ([]AuditLog, error)
 	GetAuditLogsByResourceType(ctx context.Context, arg GetAuditLogsByResourceTypeParams) ([]AuditLog, error)
 	GetAuditLogsByUserID(ctx context.Context, arg GetAuditLogsByUserIDParams) ([]AuditLog, error)
+	GetDataExportByID(ctx context.Context, arg GetDataExportByIDParams) (DataExport, error)
+	GetDataExportsByUserID(ctx context.Context, userID int64) ([]DataExport, error)
 	GetEmailVerificationByToken(ctx context.Context, tokenHash string) (EmailVerification, error)
 	GetFailedLoginAttemptsByEmail(ctx context.Context, arg GetFailedLoginAttemptsByEmailParams) ([]LoginAttempt, error)
 	GetFailedLoginAttemptsByIP(ctx context.Context, arg GetFailedLoginAttemptsByIPParams) ([]LoginAttempt, error)
@@ -52,6 +60,7 @@ type Querier interface {
 	GetLoginAttemptsByUserID(ctx context.Context, arg GetLoginAttemptsByUserIDParams) ([]LoginAttempt, error)
 	GetPasswordHistoryByUserID(ctx context.Context, arg GetPasswordHistoryByUserIDParams) ([]PasswordHistory, error)
 	GetPasswordResetByToken(ctx context.Context, tokenHash string) (PasswordReset, error)
+	GetPendingDataExports(ctx context.Context) ([]DataExport, error)
 	GetRecentAuditLogs(ctx context.Context, limit int32) ([]AuditLog, error)
 	GetRecentFailedAttemptsByEmail(ctx context.Context, email string) ([]LoginAttempt, error)
 	GetRecentFailedAttemptsByIP(ctx context.Context, ipAddress netip.Addr) ([]LoginAttempt, error)
@@ -67,17 +76,25 @@ type Querier interface {
 	GetUser(ctx context.Context, id int64) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
+	GetUserDeviceByDeviceID(ctx context.Context, arg GetUserDeviceByDeviceIDParams) (UserDevice, error)
+	GetUserDeviceByID(ctx context.Context, arg GetUserDeviceByIDParams) (UserDevice, error)
+	GetUserDevicesByUserID(ctx context.Context, userID int64) ([]UserDevice, error)
 	GetUserProfile(ctx context.Context, userID int64) (UserProfile, error)
 	GetUserWithProfile(ctx context.Context, id int64) (GetUserWithProfileRow, error)
+	MarkDeviceAsTrusted(ctx context.Context, arg MarkDeviceAsTrustedParams) (UserDevice, error)
 	MarkEmailVerificationAsUsed(ctx context.Context, id int64) error
 	MarkEmailVerified(ctx context.Context, id int64) error
 	MarkPasswordResetAsUsed(ctx context.Context, id int64) error
 	ResolveSuspiciousActivity(ctx context.Context, id int64) error
 	RevokeAllUserRefreshTokens(ctx context.Context, userID int64) error
 	RevokeRefreshToken(ctx context.Context, tokenHash string) error
+	UpdateDataExportFile(ctx context.Context, arg UpdateDataExportFileParams) (DataExport, error)
+	UpdateDataExportStatus(ctx context.Context, arg UpdateDataExportStatusParams) (DataExport, error)
 	UpdateLastLogin(ctx context.Context, id int64) error
 	UpdateRefreshTokenLastUsed(ctx context.Context, tokenHash string) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
+	UpdateUserDevice(ctx context.Context, arg UpdateUserDeviceParams) (UserDevice, error)
+	UpdateUserDeviceLastUsed(ctx context.Context, arg UpdateUserDeviceLastUsedParams) (UserDevice, error)
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UpdateUserPrivacySettings(ctx context.Context, arg UpdateUserPrivacySettingsParams) error
 	UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) error

@@ -57,4 +57,5 @@ const (
 	AuditResourceTypeAccount  = "account"
 	AuditResourceTypeData     = "data"
 	AuditResourceTypePrivacy  = "privacy"
+	AuditResourceTypeDevice   = "device"
 )

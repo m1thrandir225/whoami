@@ -83,6 +83,8 @@ func main() {
 	passwordResetRepository := repositories.NewPasswordResetRepository(dbStore)
 	loginAttemptsRepository := repositories.NewLoginAttemptsRepository(dbStore)
 	auditLogsRepository := repositories.NewAuditLogsRepository(dbStore)
+	userDevicesRepository := repositories.NewUserDevicesRepository(dbStore)
+	dataExportsRepository := repositories.NewDataExportsRepository(dbStore)
 
 	/*
 	* Services
@@ -112,6 +114,14 @@ func main() {
 	auditService := services.NewAuditService(auditLogsRepository)
 	tokenBlacklist := security.NewTokenBlacklist(redisClient)
 	sessionService := services.NewSessionService(redisClient, tokenBlacklist)
+	userDevicesService := services.NewUserDevicesService(userDevicesRepository)
+	dataExportsService := services.NewDataExportsService(
+		dataExportsRepository,
+		userRepository,
+		auditLogsRepository,
+		loginAttemptsRepository,
+		"./exports", // Export directory
+	)
 
 	/**
 	* Create HTTP handler
@@ -123,6 +133,8 @@ func main() {
 		passwordResetService,
 		emailService,
 		auditService,
+		userDevicesService,
+		dataExportsService,
 		tokenMaker,
 		tokenBlacklist,
 		sessionService,

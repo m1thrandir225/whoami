@@ -35,9 +35,10 @@ type AuditLog struct {
 type DataExport struct {
 	ID          int64       `json:"id"`
 	UserID      int64       `json:"user_id"`
-	Status      pgtype.Text `json:"status"`
 	ExportType  string      `json:"export_type"`
+	Status      string      `json:"status"`
 	FilePath    pgtype.Text `json:"file_path"`
+	FileSize    pgtype.Int8 `json:"file_size"`
 	ExpiresAt   time.Time   `json:"expires_at"`
 	CreatedAt   *time.Time  `json:"created_at"`
 	CompletedAt *time.Time  `json:"completed_at"`

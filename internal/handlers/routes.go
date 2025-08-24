@@ -67,6 +67,27 @@ func SetupRoutes(router *gin.Engine, handler *HTTPHandler) {
 				audit.GET("/recent", handler.GetRecentAuditLogs)
 				audit.POST("/cleanup", handler.CleanupOldAuditLogs)
 			}
+
+			// User Devices routes
+			devices := protected.Group("/devices")
+			{
+				devices.GET("", handler.GetUserDevices)
+				devices.GET("/:id", handler.GetUserDevice)
+				devices.PUT("/:id", handler.UpdateUserDevice)
+				devices.DELETE("/:id", handler.DeleteUserDevice)
+				devices.DELETE("", handler.DeleteAllUserDevices)
+				devices.PATCH("/:id/trust", handler.MarkDeviceAsTrusted)
+			}
+
+			// Data Exports routes
+			exports := protected.Group("/exports")
+			{
+				exports.POST("", handler.RequestDataExport)
+				exports.GET("", handler.GetDataExports)
+				exports.GET("/:id", handler.GetDataExport)
+				exports.GET("/:id/download", handler.DownloadDataExport)
+				exports.DELETE("/:id", handler.DeleteDataExport)
+			}
 		}
 
 		email := apiV1.Group("/email")
