@@ -54,13 +54,13 @@ func (h *HTTPHandler) Register(ctx *gin.Context) {
 		fmt.Printf("Warning: Failed to send verification email: %v\n", err)
 	}
 
-	accessToken, _, err := h.tokenMaker.CreateToken(user.ID, h.config.AccessTokenDuration)
+	accessToken, accessPayload, err := h.tokenMaker.CreateToken(user.ID, h.config.AccessTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	refreshToken, _, err := h.tokenMaker.CreateToken(user.ID, h.config.RefreshTokenDuration)
+	refreshToken, refreshPayload, err := h.tokenMaker.CreateToken(user.ID, h.config.RefreshTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -96,10 +96,12 @@ func (h *HTTPHandler) Register(ctx *gin.Context) {
 	})
 
 	response := registerResponse{
-		User:         *user,
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		Device:       device,
+		User:                  *user,
+		AccessToken:           accessToken,
+		AccessTokenExpiresAt:  accessPayload.ExpiredAt,
+		RefreshToken:          refreshToken,
+		RefreshTokenExpiresAt: refreshPayload.ExpiredAt,
+		Device:                device,
 	}
 	ctx.JSON(http.StatusOK, response)
 }
@@ -246,6 +248,7 @@ func (h *HTTPHandler) GetCurrentUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, user)
 }
 
+// TODO: add verification that the user is the one deactivating themselves
 func (h *HTTPHandler) DeactivateUser(ctx *gin.Context) {
 	var requestData UriID
 	if err := ctx.ShouldBindUri(&requestData); err != nil {
@@ -274,6 +277,7 @@ func (h *HTTPHandler) DeactivateUser(ctx *gin.Context) {
 	ctx.Status(http.StatusOK)
 }
 
+// TODO: add verification that the user is the one activating themselves
 func (h *HTTPHandler) ActivateUser(ctx *gin.Context) {
 	var requestData UriID
 	if err := ctx.ShouldBindUri(&requestData); err != nil {

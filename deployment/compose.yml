@@ -76,8 +76,14 @@ services:
       GITHUB_OAUTH_CLIENT_ID: ${GITHUB_OAUTH_CLIENT_ID}
       GITHUB_OAUTH_CLIENT_SECRET: ${GITHUB_OAUTH_CLIENT_SECRET}
       GITHUB_OAUTH_REDIRECT_URL: ${GITHUB_OAUTH_REDIRECT_URL}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      ENABLE_TLS: ${ENABLE_TLS}
+      TLS_CERT_FILE: ${TLS_CERT_FILE}
+      TLS_KEY_FILE: ${TLS_KEY_FILE}
     ports:
       - "${HTTP_PORT}:${HTTP_PORT}"
+    volumes:
+      - ../deployment/certs:/certs:ro
 volumes:
   whoami-db:
   whoami-redis:

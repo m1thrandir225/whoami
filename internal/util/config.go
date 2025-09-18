@@ -33,6 +33,12 @@ type Config struct {
 	GitHubOAuthClientID     string `mapstructure:"GITHUB_OAUTH_CLIENT_ID"`
 	GitHubOAuthClientSecret string `mapstructure:"GITHUB_OAUTH_CLIENT_SECRET"`
 	GitHubOAuthRedirectURL  string `mapstructure:"GITHUB_OAUTH_REDIRECT_URL"`
+
+	//CORS + TLS
+	AllowedOrigins []string `mapstructure:"ALLOWED_ORIGINS"`
+	EnableTLS      bool     `mapstructure:"ENABLE_TLS"`
+	TLSCertFile    string   `mapstructure:"TLS_CERT_FILE"`
+	TLSKeyFile     string   `mapstructure:"TLS_KEY_FILE"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
@@ -70,12 +76,20 @@ func LoadConfig(path string) (config Config, err error) {
 	viper.BindEnv("SMTP_PORT")
 	viper.BindEnv("SMTP_USERNAME")
 	viper.BindEnv("SMTP_PASSWORD")
+
+	//OAuth
 	viper.BindEnv("GOOGLE_OAUTH_CLIENT_ID")
 	viper.BindEnv("GOOGLE_OAUTH_CLIENT_SECRET")
 	viper.BindEnv("GOOGLE_OAUTH_REDIRECT_URL")
 	viper.BindEnv("GITHUB_OAUTH_CLIENT_ID")
 	viper.BindEnv("GITHUB_OAUTH_CLIENT_SECRET")
 	viper.BindEnv("GITHUB_OAUTH_REDIRECT_URL")
+
+	//CORS + TLS
+	viper.BindEnv("ALLOWED_ORIGINS")
+	viper.BindEnv("ENABLE_TLS")
+	viper.BindEnv("TLS_CERT_FILE")
+	viper.BindEnv("TLS_KEY_FILE")
 
 	err = viper.Unmarshal(&config)
 	if err != nil {

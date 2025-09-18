@@ -8,26 +8,26 @@ import (
 )
 
 type registerResponse struct {
-	User         domain.User        `json:"user"`
-	AccessToken  string             `json:"access_token"`
-	RefreshToken string             `json:"refresh_token"`
-	Device       *domain.UserDevice `json:"device"`
+	User                  domain.User        `json:"user"`
+	AccessToken           string             `json:"access_token"`
+	AccessTokenExpiresAt  time.Time          `json:"access_token_expires_at"`
+	RefreshToken          string             `json:"refresh_token"`
+	RefreshTokenExpiresAt time.Time          `json:"refresh_token_expires_at"`
+	Device                *domain.UserDevice `json:"device"`
 }
 
 type loginResponse struct {
-	User         domain.User        `json:"user"`
-	AccessToken  string             `json:"access_token"`
-	RefreshToken string             `json:"refresh_token"`
-	Device       *domain.UserDevice `json:"device"`
+	User                  domain.User        `json:"user"`
+	AccessToken           string             `json:"access_token"`
+	AccessTokenExpiresAt  time.Time          `json:"access_token_expires_at"`
+	RefreshToken          string             `json:"refresh_token"`
+	RefreshTokenExpiresAt time.Time          `json:"refresh_token_expires_at"`
+	Device                *domain.UserDevice `json:"device"`
 }
 
 type refreshTokenResponse struct {
 	AccessToken string    `json:"access_token"`
 	ExpiresAt   time.Time `json:"expires_at"`
-}
-
-type logoutResponse struct {
-	Message string `json:"message"`
 }
 
 func errorResponse(err error) gin.H {

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	db "github.com/m1thrandir225/whoami/internal/db/sqlc"
@@ -178,16 +180,28 @@ func main() {
 		config,
 	)
 
-	gin.SetMode(gin.ReleaseMode)
+	if config.Environment == "production" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	router := gin.Default()
 
-	router.Use(gin.Logger())
-	router.Use(gin.Recovery())
+	//Cors Setup
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     config.AllowedOrigins,
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: false,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	handlers.SetupRoutes(router, handler)
 
+	httpAddress := fmt.Sprintf("%s:%d", config.HTTPServerAddress, config.HTTPPort)
+
 	httpServer := &http.Server{
-		Addr:    ":8080",
+		Addr:    httpAddress,
 		Handler: router,
 	}
 
@@ -195,6 +209,12 @@ func main() {
 	* Start HTTP server
 	 */
 	go func() {
+		if config.EnableTLS {
+			if err := httpServer.ListenAndServeTLS(config.TLSCertFile, config.TLSKeyFile); err != nil && !errors.Is(err, http.ErrServerClosed) {
+				log.Fatalf("listen (TLS): %s\n", err)
+			}
+			return
+		}
 		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("listen: %s\n", err)
 		}
