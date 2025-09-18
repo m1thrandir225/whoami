@@ -12,7 +12,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/m1thrandir225/whoami/cmd/pkg/redis"
 	db "github.com/m1thrandir225/whoami/internal/db/sqlc"
 	"github.com/m1thrandir225/whoami/internal/handlers"
 	"github.com/m1thrandir225/whoami/internal/mail"
@@ -21,6 +20,7 @@ import (
 	"github.com/m1thrandir225/whoami/internal/security"
 	"github.com/m1thrandir225/whoami/internal/services"
 	"github.com/m1thrandir225/whoami/internal/util"
+	"github.com/m1thrandir225/whoami/pkg/redis"
 )
 
 func main() {
