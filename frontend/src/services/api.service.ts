@@ -5,6 +5,7 @@ import type { ApiRequestOptions, MultipartRequestOptions } from '@/types/api'
 
 import config from '@/lib/config'
 import { buildFormData } from '@/lib/form'
+import authService from './auth.service'
 
 interface FailedQueuePromise {
 	resolve: (token: string | null) => void
@@ -109,7 +110,7 @@ const createApiInstance = (): AxiosInstance => {
 						throw new Error('Refresh endpoint did not return an access token')
 					}
 
-					authStore.setTokens(newTokens)
+					authStore.setAccessToken(newTokens.access_token, newTokens.expires_at)
 
 					originalRequest.headers['Authorization'] =
 						`Bearer ${newTokens.access_token}`
@@ -120,7 +121,7 @@ const createApiInstance = (): AxiosInstance => {
 				} catch (refreshError) {
 					processQueue(refreshError, null)
 
-					useAuthStore().logout()
+					useAuthStore.getState().logout()
 
 					return Promise.reject(refreshError)
 				} finally {
@@ -195,7 +196,7 @@ export const multipartApiRequest = async <
 		return response.data
 	} catch (e: unknown) {
 		if (e instanceof AxiosError) {
-			throw new Error(e.response?.data.detail)
+			throw new Error(e.response?.data.error)
 		} else {
 			throw new Error('Unknown error happened.')
 		}

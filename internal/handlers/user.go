@@ -175,12 +175,12 @@ func (h *HTTPHandler) Login(ctx *gin.Context) {
 	}
 
 	// Generate tokens
-	accessToken, _, err := h.tokenMaker.CreateToken(user.ID, h.config.AccessTokenDuration)
+	accessToken, accessPayload, err := h.tokenMaker.CreateToken(user.ID, h.config.AccessTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	refreshToken, _, err := h.tokenMaker.CreateToken(user.ID, h.config.RefreshTokenDuration)
+	refreshToken, refreshPayload, err := h.tokenMaker.CreateToken(user.ID, h.config.RefreshTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -217,10 +217,12 @@ func (h *HTTPHandler) Login(ctx *gin.Context) {
 	}
 
 	response := loginResponse{
-		User:         *user,
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		Device:       device,
+		User:                  *user,
+		AccessToken:           accessToken,
+		RefreshToken:          refreshToken,
+		Device:                device,
+		AccessTokenExpiresAt:  accessPayload.ExpiredAt,
+		RefreshTokenExpiresAt: refreshPayload.ExpiredAt,
 	}
 
 	ctx.JSON(http.StatusOK, response)

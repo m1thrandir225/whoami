@@ -9,68 +9,226 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as DemoTanstackQueryRouteImport } from './routes/demo.tanstack-query'
+import { Route as PathlessLayoutRouteRouteImport } from './routes/_pathlessLayout/route'
+import { Route as PathlessLayoutIndexRouteImport } from './routes/_pathlessLayout/index'
+import { Route as PathlessLayoutSessionsRouteImport } from './routes/_pathlessLayout/sessions'
+import { Route as PathlessLayoutSecurityRouteImport } from './routes/_pathlessLayout/security'
+import { Route as PathlessLayoutMeRouteImport } from './routes/_pathlessLayout/me'
+import { Route as PathlessLayoutDevicesRouteImport } from './routes/_pathlessLayout/devices'
+import { Route as PathlessLayoutAuditLogsRouteImport } from './routes/_pathlessLayout/audit-logs'
+import { Route as authRegisterRouteImport } from './routes/(auth)/register'
+import { Route as authLoginRouteImport } from './routes/(auth)/login'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const PathlessLayoutRouteRoute = PathlessLayoutRouteRouteImport.update({
+  id: '/_pathlessLayout',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
-  id: '/demo/tanstack-query',
-  path: '/demo/tanstack-query',
+const PathlessLayoutIndexRoute = PathlessLayoutIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PathlessLayoutRouteRoute,
+} as any)
+const PathlessLayoutSessionsRoute = PathlessLayoutSessionsRouteImport.update({
+  id: '/sessions',
+  path: '/sessions',
+  getParentRoute: () => PathlessLayoutRouteRoute,
+} as any)
+const PathlessLayoutSecurityRoute = PathlessLayoutSecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => PathlessLayoutRouteRoute,
+} as any)
+const PathlessLayoutMeRoute = PathlessLayoutMeRouteImport.update({
+  id: '/me',
+  path: '/me',
+  getParentRoute: () => PathlessLayoutRouteRoute,
+} as any)
+const PathlessLayoutDevicesRoute = PathlessLayoutDevicesRouteImport.update({
+  id: '/devices',
+  path: '/devices',
+  getParentRoute: () => PathlessLayoutRouteRoute,
+} as any)
+const PathlessLayoutAuditLogsRoute = PathlessLayoutAuditLogsRouteImport.update({
+  id: '/audit-logs',
+  path: '/audit-logs',
+  getParentRoute: () => PathlessLayoutRouteRoute,
+} as any)
+const authRegisterRoute = authRegisterRouteImport.update({
+  id: '/(auth)/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const authLoginRoute = authLoginRouteImport.update({
+  id: '/(auth)/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/login': typeof authLoginRoute
+  '/register': typeof authRegisterRoute
+  '/audit-logs': typeof PathlessLayoutAuditLogsRoute
+  '/devices': typeof PathlessLayoutDevicesRoute
+  '/me': typeof PathlessLayoutMeRoute
+  '/security': typeof PathlessLayoutSecurityRoute
+  '/sessions': typeof PathlessLayoutSessionsRoute
+  '/': typeof PathlessLayoutIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/login': typeof authLoginRoute
+  '/register': typeof authRegisterRoute
+  '/audit-logs': typeof PathlessLayoutAuditLogsRoute
+  '/devices': typeof PathlessLayoutDevicesRoute
+  '/me': typeof PathlessLayoutMeRoute
+  '/security': typeof PathlessLayoutSecurityRoute
+  '/sessions': typeof PathlessLayoutSessionsRoute
+  '/': typeof PathlessLayoutIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/_pathlessLayout': typeof PathlessLayoutRouteRouteWithChildren
+  '/(auth)/login': typeof authLoginRoute
+  '/(auth)/register': typeof authRegisterRoute
+  '/_pathlessLayout/audit-logs': typeof PathlessLayoutAuditLogsRoute
+  '/_pathlessLayout/devices': typeof PathlessLayoutDevicesRoute
+  '/_pathlessLayout/me': typeof PathlessLayoutMeRoute
+  '/_pathlessLayout/security': typeof PathlessLayoutSecurityRoute
+  '/_pathlessLayout/sessions': typeof PathlessLayoutSessionsRoute
+  '/_pathlessLayout/': typeof PathlessLayoutIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/demo/tanstack-query'
+  fullPaths:
+    | '/login'
+    | '/register'
+    | '/audit-logs'
+    | '/devices'
+    | '/me'
+    | '/security'
+    | '/sessions'
+    | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/demo/tanstack-query'
-  id: '__root__' | '/' | '/demo/tanstack-query'
+  to:
+    | '/login'
+    | '/register'
+    | '/audit-logs'
+    | '/devices'
+    | '/me'
+    | '/security'
+    | '/sessions'
+    | '/'
+  id:
+    | '__root__'
+    | '/_pathlessLayout'
+    | '/(auth)/login'
+    | '/(auth)/register'
+    | '/_pathlessLayout/audit-logs'
+    | '/_pathlessLayout/devices'
+    | '/_pathlessLayout/me'
+    | '/_pathlessLayout/security'
+    | '/_pathlessLayout/sessions'
+    | '/_pathlessLayout/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
+  PathlessLayoutRouteRoute: typeof PathlessLayoutRouteRouteWithChildren
+  authLoginRoute: typeof authLoginRoute
+  authRegisterRoute: typeof authRegisterRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/_pathlessLayout': {
+      id: '/_pathlessLayout'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof PathlessLayoutRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo/tanstack-query': {
-      id: '/demo/tanstack-query'
-      path: '/demo/tanstack-query'
-      fullPath: '/demo/tanstack-query'
-      preLoaderRoute: typeof DemoTanstackQueryRouteImport
+    '/_pathlessLayout/': {
+      id: '/_pathlessLayout/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof PathlessLayoutIndexRouteImport
+      parentRoute: typeof PathlessLayoutRouteRoute
+    }
+    '/_pathlessLayout/sessions': {
+      id: '/_pathlessLayout/sessions'
+      path: '/sessions'
+      fullPath: '/sessions'
+      preLoaderRoute: typeof PathlessLayoutSessionsRouteImport
+      parentRoute: typeof PathlessLayoutRouteRoute
+    }
+    '/_pathlessLayout/security': {
+      id: '/_pathlessLayout/security'
+      path: '/security'
+      fullPath: '/security'
+      preLoaderRoute: typeof PathlessLayoutSecurityRouteImport
+      parentRoute: typeof PathlessLayoutRouteRoute
+    }
+    '/_pathlessLayout/me': {
+      id: '/_pathlessLayout/me'
+      path: '/me'
+      fullPath: '/me'
+      preLoaderRoute: typeof PathlessLayoutMeRouteImport
+      parentRoute: typeof PathlessLayoutRouteRoute
+    }
+    '/_pathlessLayout/devices': {
+      id: '/_pathlessLayout/devices'
+      path: '/devices'
+      fullPath: '/devices'
+      preLoaderRoute: typeof PathlessLayoutDevicesRouteImport
+      parentRoute: typeof PathlessLayoutRouteRoute
+    }
+    '/_pathlessLayout/audit-logs': {
+      id: '/_pathlessLayout/audit-logs'
+      path: '/audit-logs'
+      fullPath: '/audit-logs'
+      preLoaderRoute: typeof PathlessLayoutAuditLogsRouteImport
+      parentRoute: typeof PathlessLayoutRouteRoute
+    }
+    '/(auth)/register': {
+      id: '/(auth)/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof authRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(auth)/login': {
+      id: '/(auth)/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof authLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
+interface PathlessLayoutRouteRouteChildren {
+  PathlessLayoutAuditLogsRoute: typeof PathlessLayoutAuditLogsRoute
+  PathlessLayoutDevicesRoute: typeof PathlessLayoutDevicesRoute
+  PathlessLayoutMeRoute: typeof PathlessLayoutMeRoute
+  PathlessLayoutSecurityRoute: typeof PathlessLayoutSecurityRoute
+  PathlessLayoutSessionsRoute: typeof PathlessLayoutSessionsRoute
+  PathlessLayoutIndexRoute: typeof PathlessLayoutIndexRoute
+}
+
+const PathlessLayoutRouteRouteChildren: PathlessLayoutRouteRouteChildren = {
+  PathlessLayoutAuditLogsRoute: PathlessLayoutAuditLogsRoute,
+  PathlessLayoutDevicesRoute: PathlessLayoutDevicesRoute,
+  PathlessLayoutMeRoute: PathlessLayoutMeRoute,
+  PathlessLayoutSecurityRoute: PathlessLayoutSecurityRoute,
+  PathlessLayoutSessionsRoute: PathlessLayoutSessionsRoute,
+  PathlessLayoutIndexRoute: PathlessLayoutIndexRoute,
+}
+
+const PathlessLayoutRouteRouteWithChildren =
+  PathlessLayoutRouteRoute._addFileChildren(PathlessLayoutRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  DemoTanstackQueryRoute: DemoTanstackQueryRoute,
+  PathlessLayoutRouteRoute: PathlessLayoutRouteRouteWithChildren,
+  authLoginRoute: authLoginRoute,
+  authRegisterRoute: authRegisterRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

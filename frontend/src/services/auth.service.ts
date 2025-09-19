@@ -13,7 +13,7 @@ import type {
 import type { User } from '@/types/models/user'
 import type { GenericMessageResponse } from '@/types/api/generic.response'
 
-const authAPIUrl = `${config.apiUrl}/`
+const authAPIUrl = `${config.apiUrl}`
 
 const authService = {
 	register: (input: RegisterRequest) =>

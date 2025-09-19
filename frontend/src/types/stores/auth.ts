@@ -12,6 +12,7 @@ type State = {
 }
 
 type Actions = {
+	isAuthenticated: () => boolean
 	register: (data: RegisterResponse) => void
 	login: (data: LoginResponse) => void
 	logout: () => void
