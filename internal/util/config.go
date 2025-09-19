@@ -39,6 +39,8 @@ type Config struct {
 	EnableTLS      bool     `mapstructure:"ENABLE_TLS"`
 	TLSCertFile    string   `mapstructure:"TLS_CERT_FILE"`
 	TLSKeyFile     string   `mapstructure:"TLS_KEY_FILE"`
+
+	FrontendURL string `mapstructure:"FRONTEND_URL"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
@@ -76,6 +78,7 @@ func LoadConfig(path string) (config Config, err error) {
 	viper.BindEnv("SMTP_PORT")
 	viper.BindEnv("SMTP_USERNAME")
 	viper.BindEnv("SMTP_PASSWORD")
+	viper.BindEnv("FRONTEND_URL")
 
 	//OAuth
 	viper.BindEnv("GOOGLE_OAUTH_CLIENT_ID")

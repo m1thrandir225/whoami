@@ -17,6 +17,7 @@ import { Route as PathlessLayoutMeRouteImport } from './routes/_pathlessLayout/m
 import { Route as PathlessLayoutDevicesRouteImport } from './routes/_pathlessLayout/devices'
 import { Route as PathlessLayoutAuditLogsRouteImport } from './routes/_pathlessLayout/audit-logs'
 import { Route as authRegisterRouteImport } from './routes/(auth)/register'
+import { Route as authOauthCallbackRouteImport } from './routes/(auth)/oauth-callback'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 
 const PathlessLayoutRouteRoute = PathlessLayoutRouteRouteImport.update({
@@ -58,6 +59,11 @@ const authRegisterRoute = authRegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
+const authOauthCallbackRoute = authOauthCallbackRouteImport.update({
+  id: '/(auth)/oauth-callback',
+  path: '/oauth-callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const authLoginRoute = authLoginRouteImport.update({
   id: '/(auth)/login',
   path: '/login',
@@ -66,6 +72,7 @@ const authLoginRoute = authLoginRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/login': typeof authLoginRoute
+  '/oauth-callback': typeof authOauthCallbackRoute
   '/register': typeof authRegisterRoute
   '/audit-logs': typeof PathlessLayoutAuditLogsRoute
   '/devices': typeof PathlessLayoutDevicesRoute
@@ -76,6 +83,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/login': typeof authLoginRoute
+  '/oauth-callback': typeof authOauthCallbackRoute
   '/register': typeof authRegisterRoute
   '/audit-logs': typeof PathlessLayoutAuditLogsRoute
   '/devices': typeof PathlessLayoutDevicesRoute
@@ -88,6 +96,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_pathlessLayout': typeof PathlessLayoutRouteRouteWithChildren
   '/(auth)/login': typeof authLoginRoute
+  '/(auth)/oauth-callback': typeof authOauthCallbackRoute
   '/(auth)/register': typeof authRegisterRoute
   '/_pathlessLayout/audit-logs': typeof PathlessLayoutAuditLogsRoute
   '/_pathlessLayout/devices': typeof PathlessLayoutDevicesRoute
@@ -100,6 +109,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/login'
+    | '/oauth-callback'
     | '/register'
     | '/audit-logs'
     | '/devices'
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
+    | '/oauth-callback'
     | '/register'
     | '/audit-logs'
     | '/devices'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_pathlessLayout'
     | '/(auth)/login'
+    | '/(auth)/oauth-callback'
     | '/(auth)/register'
     | '/_pathlessLayout/audit-logs'
     | '/_pathlessLayout/devices'
@@ -133,6 +145,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   PathlessLayoutRouteRoute: typeof PathlessLayoutRouteRouteWithChildren
   authLoginRoute: typeof authLoginRoute
+  authOauthCallbackRoute: typeof authOauthCallbackRoute
   authRegisterRoute: typeof authRegisterRoute
 }
 
@@ -194,6 +207,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authRegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(auth)/oauth-callback': {
+      id: '/(auth)/oauth-callback'
+      path: '/oauth-callback'
+      fullPath: '/oauth-callback'
+      preLoaderRoute: typeof authOauthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/(auth)/login': {
       id: '/(auth)/login'
       path: '/login'
@@ -228,6 +248,7 @@ const PathlessLayoutRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   PathlessLayoutRouteRoute: PathlessLayoutRouteRouteWithChildren,
   authLoginRoute: authLoginRoute,
+  authOauthCallbackRoute: authOauthCallbackRoute,
   authRegisterRoute: authRegisterRoute,
 }
 export const routeTree = rootRouteImport

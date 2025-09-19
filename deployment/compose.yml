@@ -80,6 +80,7 @@ services:
       ENABLE_TLS: ${ENABLE_TLS}
       TLS_CERT_FILE: ${TLS_CERT_FILE}
       TLS_KEY_FILE: ${TLS_KEY_FILE}
+      FRONTEND_URL: ${FRONTEND_URL}
     ports:
       - "${HTTP_PORT}:${HTTP_PORT}"
     volumes:

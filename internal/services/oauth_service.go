@@ -138,18 +138,42 @@ func (s *oauthService) AuthenticateWithOAuth(ctx context.Context, provider, prov
 			if err != nil {
 				return nil, nil, fmt.Errorf("failed to link oauth account: %w", err)
 			}
+
+			// Ensure email is verified for OAuth users
+			if !user.EmailVerified {
+				if err := s.userRepo.MarkEmailVerified(ctx, user.ID); err != nil {
+					fmt.Printf("Warning: Failed to verify email for OAuth user: %v\n", err)
+				} else {
+					// Reload user to get updated EmailVerified status
+					user, err = s.userRepo.GetUserByID(ctx, user.ID)
+					if err != nil {
+						fmt.Printf("Warning: Failed to reload user after email verification: %v\n", err)
+					}
+				}
+			}
+
 			return user, oauthAccount, nil
 		}
 	}
 
-	// No existing user found, create new user
+	// No existing user found, create new user with email verified
 	user, err := s.userRepo.CreateUser(ctx, domain.CreateUserAction{
 		Email:           *userInfo.Email,
+		Username:        userInfo.Name,             // Use Name as username
 		PrivacySettings: &domain.PrivacySettings{}, // Default privacy settings
 		Password:        "",                        // OAuth users don't need password
 	})
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create user: %w", err)
+	}
+
+	if err := s.userRepo.MarkEmailVerified(ctx, user.ID); err != nil {
+		fmt.Printf("Warning: Failed to verify email for OAuth user: %v\n", err)
+	} else {
+		user, err = s.userRepo.GetUserByID(ctx, user.ID)
+		if err != nil {
+			fmt.Printf("Warning: Failed to reload user after email verification: %v\n", err)
+		}
 	}
 
 	// Link OAuth account to new user

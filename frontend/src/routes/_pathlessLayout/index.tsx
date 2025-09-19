@@ -1,57 +1,74 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Shield, Activity, Monitor, AlertTriangle, Download, Users, Clock, CheckCircle } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import auditService from '@/services/audit.service'
 import authService from '@/services/auth.service'
-import sessionService from '@/services/session.service'
 import devicesService from '@/services/devices.service'
 import securityService from '@/services/security.service'
-import auditService from '@/services/audit.service'
+import sessionService from '@/services/session.service'
+import { useAuthStore } from '@/stores/auth'
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import {
+  Activity,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Download,
+  Monitor,
+  Shield,
+  Users,
+} from 'lucide-react'
 
 export const Route = createFileRoute('/_pathlessLayout/')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
+  const authStore = useAuthStore()
   // Get dashboard data
   const { data: user } = useQuery({
     queryKey: ['current-user'],
-    queryFn: authService.getCurrentUser,
+    queryFn: () => authService.getCurrentUser(),
+    enabled: !!authStore.User,
   })
 
-  const { data: sessions } = useQuery({
+  const { data: sessionData } = useQuery({
     queryKey: ['user-sessions'],
-    queryFn: sessionService.getUserSessions,
+    queryFn: () => sessionService.getUserSessions(),
+    enabled: !!authStore.User,
   })
 
   const { data: devices } = useQuery({
     queryKey: ['user-devices'],
-    queryFn: devicesService.getUserDevices,
+    queryFn: () => devicesService.getUserDevices(),
+    enabled: !!authStore.User,
   })
 
   const { data: suspiciousActivities } = useQuery({
     queryKey: ['suspicious-activities'],
-    queryFn: securityService.getSuspiciousActivities,
+    queryFn: () => securityService.getSuspiciousActivities(),
+    enabled: !!authStore.User,
   })
 
   const { data: recentAuditLogs } = useQuery({
     queryKey: ['recent-audit-logs'],
-    queryFn: auditService.getRecentAuditLogs,
+    queryFn: () => auditService.getRecentAuditLogs(),
+    enabled: !!authStore.User,
   })
-
-  const activeSessions = sessions?.filter(s => s.is_active).length || 0
-  const trustedDevices = devices?.filter(d => d.trusted).length || 0
-  const unresolvedActivities = suspiciousActivities?.filter(a => !a.resolved).length || 0
-
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         <p className="text-muted-foreground">
-          Welcome back! Here's an overview of your account security and activity.
+          Welcome back! Here's an overview of your account security and
+          activity.
         </p>
       </div>
 
@@ -59,11 +76,15 @@ function RouteComponent() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Sessions</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Active Sessions
+            </CardTitle>
             <Monitor className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{activeSessions}</div>
+            <div className="text-2xl font-bold">
+              {sessionData?.sessions?.length || 0}
+            </div>
             <p className="text-xs text-muted-foreground">
               Across all your devices
             </p>
@@ -72,11 +93,13 @@ function RouteComponent() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Trusted Devices</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Trusted Devices
+            </CardTitle>
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{trustedDevices}</div>
+            <div className="text-2xl font-bold">{devices?.length || 0}</div>
             <p className="text-xs text-muted-foreground">
               Verified for quick access
             </p>
@@ -85,20 +108,28 @@ function RouteComponent() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Security Alerts</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Security Alerts
+            </CardTitle>
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{unresolvedActivities}</div>
+            <div className="text-2xl font-bold">
+              {suspiciousActivities?.length || 0}
+            </div>
             <p className="text-xs text-muted-foreground">
-              {unresolvedActivities === 0 ? 'All clear!' : 'Require attention'}
+              {suspiciousActivities?.length === 0
+                ? 'All clear!'
+                : 'Require attention'}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Account Status</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Account Status
+            </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -116,7 +147,9 @@ function RouteComponent() {
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              {user?.email_verified ? 'Email verified' : 'Email pending verification'}
+              {user?.email_verified
+                ? 'Email verified'
+                : 'Email pending verification'}
             </p>
           </CardContent>
         </Card>
@@ -169,28 +202,33 @@ function RouteComponent() {
               </CardDescription>
             </div>
             <Button asChild variant="outline" size="sm">
-              <Link to="/audit-logs">
-                View All
-              </Link>
+              <Link to="/audit-logs">View All</Link>
             </Button>
           </div>
         </CardHeader>
         <CardContent>
-          {!recentAuditLogs?.length ? (
+          {!recentAuditLogs?.audit_logs?.length ? (
             <div className="flex items-center justify-center h-24">
               <p className="text-muted-foreground">No recent activity.</p>
             </div>
           ) : (
             <div className="space-y-3">
-              {recentAuditLogs.slice(0, 5).map((log) => (
-                <div key={log.id} className="flex items-center gap-3 p-3 border rounded-lg">
+              {recentAuditLogs.audit_logs.slice(0, 5).map((log) => (
+                <div
+                  key={log.id}
+                  className="flex items-center gap-3 p-3 border rounded-lg"
+                >
                   <Activity className="h-4 w-4 text-muted-foreground" />
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm font-medium">
-                        {log.action.split('_').map(word =>
-                          word.charAt(0).toUpperCase() + word.slice(1)
-                        ).join(' ')}
+                        {log.action
+                          .split('_')
+                          .map(
+                            (word) =>
+                              word.charAt(0).toUpperCase() + word.slice(1),
+                          )
+                          .join(' ')}
                       </span>
                       {log.resource_type && (
                         <Badge variant="outline" className="text-xs">
@@ -203,12 +241,9 @@ function RouteComponent() {
                         <Clock className="inline h-3 w-3 mr-1" />
                         {log.created_at
                           ? new Date(log.created_at).toLocaleString()
-                          : 'Unknown'
-                        }
+                          : 'Unknown'}
                       </span>
-                      {log.ip_address && (
-                        <span>IP: {log.ip_address}</span>
-                      )}
+                      {log.ip_address && <span>IP: {log.ip_address}</span>}
                     </div>
                   </div>
                 </div>
@@ -219,7 +254,7 @@ function RouteComponent() {
       </Card>
 
       {/* Security Alerts */}
-      {unresolvedActivities > 0 && (
+      {suspiciousActivities?.length && (
         <Card className="border-red-200 bg-red-50">
           <CardHeader>
             <div className="flex items-center gap-2">
@@ -227,14 +262,13 @@ function RouteComponent() {
               <CardTitle className="text-red-700">Security Alerts</CardTitle>
             </div>
             <CardDescription className="text-red-600">
-              You have {unresolvedActivities} unresolved security alert{unresolvedActivities !== 1 ? 's' : ''}.
+              You have {suspiciousActivities?.length} unresolved security alert
+              {suspiciousActivities?.length !== 1 ? 's' : ''}.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild>
-              <Link to="/security">
-                Review Security Alerts
-              </Link>
+              <Link to="/security">Review Security Alerts</Link>
             </Button>
           </CardContent>
         </Card>

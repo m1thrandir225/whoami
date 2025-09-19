@@ -30,16 +30,19 @@ import { useMutation } from '@tanstack/react-query'
 import authService from '@/services/auth.service'
 import { toast } from 'sonner'
 import { IconLoader } from '@tabler/icons-react'
+import { useNavigate } from '@tanstack/react-router'
 
 export function NavUser() {
   const { isMobile } = useSidebar()
   const { User, logout } = useAuthStore()
+  const navigate = useNavigate()
   const { mutateAsync, status } = useMutation({
     mutationKey: ['logout'],
     mutationFn: () => authService.logout(),
     onSuccess: () => {
       toast.success('Logged out successfully')
       logout()
+      navigate({ to: '/login' })
     },
     onError: (error) => {
       toast.error(error.message)

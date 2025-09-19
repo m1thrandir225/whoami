@@ -158,6 +158,7 @@ func main() {
 		oauthAccountsRepository,
 		userRepository,
 	)
+	oauthTempService := services.NewOAuthTempService(redisClient)
 
 	/**
 	* Create HTTP handler
@@ -177,6 +178,7 @@ func main() {
 		tokenBlacklist,
 		sessionService,
 		rateLimiter,
+		oauthTempService,
 		config,
 	)
 

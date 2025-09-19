@@ -26,6 +26,11 @@ WHERE email = $1;
 SELECT * FROM users
 WHERE username = $1;
 
+-- name: VerifyUserEmail :exec
+UPDATE users
+SET email_verified = TRUE, updated_at = NOW()
+WHERE id = $1;
+
 
 -- name: UpdateUser :exec
 UPDATE users

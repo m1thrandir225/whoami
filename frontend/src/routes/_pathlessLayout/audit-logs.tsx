@@ -1,13 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Select,
   SelectContent,
@@ -15,27 +8,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import {
-  Calendar,
-  Search,
-  Shield,
-  User,
-  Lock,
-  Mail,
-  Activity,
-} from 'lucide-react'
-import { useState } from 'react'
 import auditService from '@/services/audit.service'
 import { AuditActions, AuditResourceTypes } from '@/types/models/audit_log'
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+import { Activity, Lock, Mail, Shield, User } from 'lucide-react'
+import { useState } from 'react'
 
 export const Route = createFileRoute('/_pathlessLayout/audit-logs')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  const [filter, setFilter] = useState<'recent' | 'action' | 'resource' | 'ip'>(
+  const [filter, setFilter] = useState<'recent' | 'action' | 'resource'>(
     'recent',
   )
   const [filterValue, setFilterValue] = useState('')
@@ -52,10 +37,6 @@ function RouteComponent() {
         case 'resource':
           return filterValue
             ? auditService.getAuditLogsByResourceType(filterValue)
-            : auditService.getRecentAuditLogs()
-        case 'ip':
-          return filterValue
-            ? auditService.getAuditLogsByIP(filterValue)
             : auditService.getRecentAuditLogs()
         default:
           return auditService.getRecentAuditLogs()
@@ -122,7 +103,6 @@ function RouteComponent() {
                   <SelectItem value="recent">Recent Activity</SelectItem>
                   <SelectItem value="action">Action Type</SelectItem>
                   <SelectItem value="resource">Resource Type</SelectItem>
-                  <SelectItem value="ip">IP Address</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -163,37 +143,24 @@ function RouteComponent() {
               </div>
             )}
 
-            {filter === 'ip' && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium">IP Address</label>
-                <Input
-                  placeholder="Enter IP address"
-                  value={filterValue}
-                  onChange={(e) => setFilterValue(e.target.value)}
-                  className="w-48"
-                />
-              </div>
-            )}
-
             <Button onClick={() => setFilterValue('')} variant="outline">
               Clear
             </Button>
           </div>
         </CardContent>
       </Card>
-
       {/* Audit Logs */}
-      {!auditLogs?.length ? (
+      {!auditLogs?.audit_logs?.length ? (
         <Card>
           <CardContent className="flex items-center justify-center h-32">
             <p className="text-muted-foreground">No audit logs found.</p>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-3">
-          {auditLogs.map((log) => (
-            <Card key={log.id}>
-              <CardContent className="pt-6">
+        <div className="flex flex-col gap-3 max-w-[1200px] max-h-[500px] overflow-y-auto p-6">
+          {auditLogs.audit_logs.map((log) => (
+            <Card key={log.id} className="max-w-full">
+              <CardContent className="pt-6 w-full">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3">
                     {getActionIcon(log.action)}
@@ -245,7 +212,7 @@ function RouteComponent() {
                       {log.details && (
                         <div className="mt-3">
                           <span className="font-medium text-sm">Details:</span>
-                          <pre className="text-xs text-muted-foreground mt-1 bg-muted p-2 rounded overflow-x-auto">
+                          <pre className="text-xs text-muted-foreground mt-1 bg-muted p-2 rounded break-all text-wrap">
                             {JSON.stringify(log.details, null, 2)}
                           </pre>
                         </div>

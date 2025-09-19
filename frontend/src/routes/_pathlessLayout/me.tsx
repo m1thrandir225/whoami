@@ -13,10 +13,25 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { Github, Unlink } from 'lucide-react'
 import authService from '@/services/auth.service'
 import userService from '@/services/user.service'
+import oauthService from '@/services/oauth.service'
+import { oauthManager } from '@/lib/oauth'
+import { OAuthProviders } from '@/types/models/oauth_account'
 import type {
   UpdateUserRequest,
   UpdatePasswordRequest,
@@ -31,11 +46,18 @@ function RouteComponent() {
   const queryClient = useQueryClient()
   const [isEditingProfile, setIsEditingProfile] = useState(false)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
+  const [oauthLoading, setOauthLoading] = useState<string | null>(null)
 
   // Get current user data
   const { data: user, isLoading } = useQuery({
     queryKey: ['current-user'],
     queryFn: authService.getCurrentUser,
+  })
+
+  // Get OAuth accounts
+  const { data: oauthAccounts } = useQuery({
+    queryKey: ['oauth-accounts'],
+    queryFn: oauthService.getOAuthAccounts,
   })
 
   // Profile update mutation
@@ -78,6 +100,18 @@ function RouteComponent() {
     },
   })
 
+  // Unlink OAuth account mutation
+  const unlinkOAuthMutation = useMutation({
+    mutationFn: (provider: string) => oauthService.unlinkOAuthAccount(provider),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['oauth-accounts'] })
+      toast.success('OAuth account unlinked successfully')
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to unlink OAuth account')
+    },
+  })
+
   const handleProfileSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
@@ -103,6 +137,53 @@ function RouteComponent() {
       ...user.privacy_settings,
       [key]: value,
     })
+  }
+
+  const handleLinkOAuth = async (provider: string) => {
+    setOauthLoading(provider)
+    try {
+      await oauthManager.linkAccount(provider as any)
+      queryClient.invalidateQueries({ queryKey: ['oauth-accounts'] })
+      toast.success(`${provider} account linked successfully!`)
+    } catch (error: any) {
+      toast.error(error.message || `Failed to link ${provider} account`)
+    } finally {
+      setOauthLoading(null)
+    }
+  }
+
+  const getProviderIcon = (provider: string) => {
+    switch (provider) {
+      case 'google':
+        return (
+          <svg className="h-4 w-4" viewBox="0 0 24 24">
+            <path
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              fill="#4285F4"
+            />
+            <path
+              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              fill="#34A853"
+            />
+            <path
+              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+              fill="#FBBC05"
+            />
+            <path
+              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+              fill="#EA4335"
+            />
+          </svg>
+        )
+      case 'github':
+        return <Github className="h-4 w-4" />
+      default:
+        return null
+    }
+  }
+
+  const isProviderLinked = (provider: string) => {
+    return oauthAccounts?.some((account) => account.provider === provider)
   }
 
   if (isLoading) {
@@ -219,6 +300,95 @@ function RouteComponent() {
               </Button>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Connected Accounts */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Connected Accounts</CardTitle>
+          <CardDescription>
+            Link your social accounts for quick sign-in and enhanced security.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {[OAuthProviders.GOOGLE, OAuthProviders.GITHUB].map((provider) => {
+            const linkedAccount = oauthAccounts?.find(
+              (account) => account.provider === provider,
+            )
+            const isLinked = !!linkedAccount
+
+            return (
+              <div
+                key={provider}
+                className="flex items-center justify-between p-3 border rounded-lg"
+              >
+                <div className="flex items-center gap-3">
+                  {getProviderIcon(provider)}
+                  <div>
+                    <p className="font-medium capitalize">{provider}</p>
+                    {isLinked && linkedAccount ? (
+                      <p className="text-sm text-muted-foreground">
+                        Connected as{' '}
+                        {linkedAccount.email || linkedAccount.name || 'Unknown'}
+                      </p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        Not connected
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  {isLinked ? (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Unlink className="h-4 w-4 mr-1" />
+                          Disconnect
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Disconnect {provider}?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will remove the connection to your {provider}{' '}
+                            account. You'll need to reconnect it if you want to
+                            use it for sign-in.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => unlinkOAuthMutation.mutate(provider)}
+                            disabled={unlinkOAuthMutation.isPending}
+                          >
+                            {unlinkOAuthMutation.isPending
+                              ? 'Disconnecting...'
+                              : 'Disconnect'}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleLinkOAuth(provider)}
+                      disabled={oauthLoading === provider}
+                    >
+                      {oauthLoading === provider ? (
+                        <div className="mr-1 h-4 w-4 animate-spin rounded-full border-2 border-b-transparent" />
+                      ) : null}
+                      Connect
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )
+          })}
         </CardContent>
       </Card>
 

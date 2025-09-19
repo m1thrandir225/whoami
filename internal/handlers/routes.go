@@ -32,6 +32,7 @@ func SetupRoutes(router *gin.Engine, handler *HTTPHandler) {
 		{
 			oauth.GET("/login/:provider", handler.OAuthLogin)
 			oauth.GET("/callback/:provider", handler.OAuthCallback)
+			oauth.POST("/exchange", handler.ExchangeTempOAuthToken)
 		}
 
 		protected := apiV1.Group("/")

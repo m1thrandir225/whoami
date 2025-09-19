@@ -64,6 +64,21 @@ export const useAuthStore = create<AuthStore>()(
 			setUser: (newUser) => {
 				set({ User: newUser })
 			},
+			setTokens: (
+				accessToken,
+				refreshToken,
+				accessTokenExpiresAt,
+				refreshTokenExpiresAt,
+			) => {
+				const accessTokenExpiresAtDate = new Date(accessTokenExpiresAt)
+				const refreshTokenExpiresAtDate = new Date(refreshTokenExpiresAt)
+				set({
+					accessToken,
+					refreshToken,
+					accessTokenExpiresAt: accessTokenExpiresAtDate,
+					refreshTokenExpiresAt: refreshTokenExpiresAtDate,
+				})
+			},
 			setAccessToken: (token, expiresAt) => {
 				const expiresAtDate = new Date(expiresAt)
 				set({ accessToken: token, accessTokenExpiresAt: expiresAtDate })

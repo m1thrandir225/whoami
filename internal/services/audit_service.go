@@ -3,7 +3,10 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/m1thrandir225/whoami/internal/domain"
@@ -35,18 +38,26 @@ func NewAuditService(auditRepo repositories.AuditLogsRepository) AuditService {
 }
 
 func (s *auditService) LogUserAction(ctx context.Context, userID int64, action string, resourceType string, resourceID int64, r *http.Request, details map[string]interface{}) error {
-	detailsJSON, _ := json.Marshal(details)
+	detailsJSON, err := json.Marshal(details)
+	if err != nil {
+		fmt.Printf("Failed to marshal audit details: %v\n", err)
+		detailsJSON = []byte("{}")
+	}
 
-	_, err := s.auditRepo.CreateAuditLog(ctx, domain.CreateAuditLogAction{
+	ipAddress := s.getClientIP(r)
+	userAgent := s.getUserAgent(r)
+
+	_, err = s.auditRepo.CreateAuditLog(ctx, domain.CreateAuditLogAction{
 		UserID:       &userID,
 		Action:       action,
 		ResourceType: &resourceType,
 		ResourceID:   &resourceID,
-		IPAddress:    s.getClientIP(r),
-		UserAgent:    s.getUserAgent(r),
+		IPAddress:    ipAddress,
+		UserAgent:    userAgent,
 		Details:      detailsJSON,
 	})
 	if err != nil {
+		fmt.Printf("Failed to create audit log: %v\n", err)
 		return err
 	}
 
@@ -73,18 +84,26 @@ func (s *auditService) LogSystemAction(ctx context.Context, action string, resou
 }
 
 func (s *auditService) LogAnonymousAction(ctx context.Context, action string, resourceType string, resourceID int64, r *http.Request, details map[string]interface{}) error {
-	detailsJSON, _ := json.Marshal(details)
+	detailsJSON, err := json.Marshal(details)
+	if err != nil {
+		fmt.Printf("Failed to marshal audit details: %v\n", err)
+		detailsJSON = []byte("{}")
+	}
 
-	_, err := s.auditRepo.CreateAuditLog(ctx, domain.CreateAuditLogAction{
+	ipAddress := s.getClientIP(r)
+	userAgent := s.getUserAgent(r)
+
+	_, err = s.auditRepo.CreateAuditLog(ctx, domain.CreateAuditLogAction{
 		UserID:       nil, // Anonymous action
 		Action:       action,
 		ResourceType: &resourceType,
 		ResourceID:   &resourceID,
-		IPAddress:    s.getClientIP(r),
-		UserAgent:    s.getUserAgent(r),
+		IPAddress:    ipAddress,
+		UserAgent:    userAgent,
 		Details:      detailsJSON,
 	})
 	if err != nil {
+		fmt.Printf("Failed to create audit log: %v\n", err)
 		return err
 	}
 
@@ -134,31 +153,53 @@ func (s *auditService) CleanupOldAuditLogs(ctx context.Context) error {
 }
 
 func (s *auditService) getClientIP(r *http.Request) *string {
-	if r == nil {
-		return nil
+	// Try various headers for the real IP
+	headers := []string{
+		"CF-Connecting-IP",    // Cloudflare
+		"True-Client-IP",      // Cloudflare Enterprise
+		"X-Real-IP",           // Nginx
+		"X-Forwarded-For",     // Standard
+		"X-Client-IP",         // Apache
+		"X-Cluster-Client-IP", // Cluster
 	}
 
-	// Try to get real IP from headers
-	ip := r.Header.Get("X-Real-IP")
-	if ip == "" {
-		ip = r.Header.Get("X-Forwarded-For")
+	for _, header := range headers {
+		ip := r.Header.Get(header)
+		if ip != "" {
+			// For X-Forwarded-For, take the first IP
+			if header == "X-Forwarded-For" {
+				ips := strings.Split(ip, ",")
+				ip = strings.TrimSpace(ips[0])
+			}
+
+			// Validate the IP address
+			if net.ParseIP(ip) != nil {
+				return &ip
+			}
+		}
 	}
-	if ip == "" {
+
+	// Fallback to RemoteAddr
+	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		// If SplitHostPort fails, use RemoteAddr as is
 		ip = r.RemoteAddr
 	}
 
-	return &ip
+	// Validate the IP
+	if net.ParseIP(ip) != nil {
+		return &ip
+	}
+
+	// If all else fails, return localhost
+	localhost := "127.0.0.1"
+	return &localhost
 }
 
 func (s *auditService) getUserAgent(r *http.Request) *string {
-	if r == nil {
-		return nil
-	}
-
 	userAgent := r.Header.Get("User-Agent")
 	if userAgent == "" {
 		return nil
 	}
-
 	return &userAgent
 }

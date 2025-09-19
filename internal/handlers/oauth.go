@@ -2,11 +2,14 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/m1thrandir225/whoami/internal/domain"
 	"github.com/m1thrandir225/whoami/internal/oauth"
+	"github.com/m1thrandir225/whoami/internal/security"
+	"github.com/m1thrandir225/whoami/internal/services"
 )
 
 type oauthCallbackRequest struct {
@@ -16,6 +19,10 @@ type oauthCallbackRequest struct {
 
 type linkOAuthRequest struct {
 	Provider string `json:"provider" binding:"required,oneof=google github"`
+}
+
+type exchangeTempTokenRequest struct {
+	Token string `json:"token" binding:"required"`
 }
 
 func (h *HTTPHandler) OAuthLogin(ctx *gin.Context) {
@@ -118,14 +125,34 @@ func (h *HTTPHandler) OAuthCallback(ctx *gin.Context) {
 	}
 
 	// Generate tokens
-	accessToken, _, err := h.tokenMaker.CreateToken(user.ID, h.config.AccessTokenDuration)
+	accessToken, accessPayload, err := h.tokenMaker.CreateToken(user.ID, h.config.AccessTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	refreshToken, _, err := h.tokenMaker.CreateToken(user.ID, h.config.RefreshTokenDuration)
+	refreshToken, refreshPayload, err := h.tokenMaker.CreateToken(user.ID, h.config.RefreshTokenDuration)
 	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	deviceInfo := security.ExtractDeviceInfo(ctx)
+	device, err := h.userDevicesService.GetOrCreateDevice(ctx, user.ID, deviceInfo)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	deviceInfoMap := map[string]string{
+		"device_id":   deviceInfo.DeviceID,
+		"device_name": deviceInfo.DeviceName,
+		"device_type": deviceInfo.DeviceType,
+		"user_agent":  deviceInfo.UserAgent,
+		"ip_address":  deviceInfo.IPAddress,
+	}
+
+	if err := h.sessionService.CreateSession(ctx, user.ID, accessToken, deviceInfoMap); err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -137,10 +164,72 @@ func (h *HTTPHandler) OAuthCallback(ctx *gin.Context) {
 		"success":       true,
 	})
 
+	tempAuthData := &services.TempOAuthData{
+		User:                  *user,
+		AccessToken:           accessToken,
+		RefreshToken:          refreshToken,
+		AccessTokenExpiresAt:  accessPayload.ExpiredAt,
+		RefreshTokenExpiresAt: refreshPayload.ExpiredAt,
+		Device:                device,
+	}
+
+	tempToken, err := h.oauthTempService.StoreTemporaryAuthData(ctx, tempAuthData)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	// Redirect to frontend callback with temporary token
+	frontendURL := h.config.FrontendURL
+	fmt.Println("Frontend URL: ", frontendURL)
+	redirectURL := fmt.Sprintf("%s/oauth-callback?token=%s&success=true", frontendURL, tempToken)
+	fmt.Println("Redirecting to: ", redirectURL)
+	ctx.Redirect(http.StatusTemporaryRedirect, redirectURL)
+
+}
+
+func (h *HTTPHandler) ExchangeTempOAuthToken(ctx *gin.Context) {
+	var req exchangeTempTokenRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	// Get auth data from temporary storage
+	authData, err := h.oauthTempService.GetTemporaryAuthData(ctx, req.Token)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("invalid or expired token")))
+		return
+	}
+
+	// Delete the temporary token (one-time use)
+	if err := h.oauthTempService.DeleteTemporaryAuthData(ctx, req.Token); err != nil {
+		// Log error but don't fail the request
+		h.auditService.LogAnonymousAction(ctx, "oauth_temp_token_cleanup_failed", domain.AuditResourceTypeUser, 0, ctx.Request, map[string]interface{}{
+			"error": err.Error(),
+		})
+	}
+
+	// Log successful token exchange
+	h.auditService.LogUserAction(ctx, authData.User.ID, "oauth_token_exchange", domain.AuditResourceTypeUser, authData.User.ID, ctx.Request, map[string]interface{}{
+		"success": true,
+	})
+
+	var device *domain.UserDevice
+	if authData.Device != nil {
+		if devicePtr, ok := authData.Device.(*domain.UserDevice); ok {
+			device = devicePtr
+		}
+	}
+
+	// Return the auth data as a login response
 	response := loginResponse{
-		User:         *user,
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
+		User:                  authData.User,
+		AccessToken:           authData.AccessToken,
+		RefreshToken:          authData.RefreshToken,
+		AccessTokenExpiresAt:  authData.AccessTokenExpiresAt,
+		RefreshTokenExpiresAt: authData.RefreshTokenExpiresAt,
+		Device:                device,
 	}
 
 	ctx.JSON(http.StatusOK, response)

@@ -31,13 +31,11 @@ export const Route = createFileRoute('/_pathlessLayout/sessions')({
 function RouteComponent() {
   const queryClient = useQueryClient()
 
-  // Get user sessions
-  const { data: sessions, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['user-sessions'],
-    queryFn: sessionService.getUserSessions,
+    queryFn: () => sessionService.getUserSessions(),
   })
 
-  // Revoke session mutation
   const revokeSessionMutation = useMutation({
     mutationFn: (token: string) => sessionService.revokeSession(token),
     onSuccess: () => {
@@ -49,9 +47,8 @@ function RouteComponent() {
     },
   })
 
-  // Revoke all sessions mutation
   const revokeAllSessionsMutation = useMutation({
-    mutationFn: sessionService.revokeAllSessions,
+    mutationFn: () => sessionService.revokeAllSessions(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-sessions'] })
       toast.success('All sessions revoked successfully')
@@ -96,7 +93,7 @@ function RouteComponent() {
         </div>
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="destructive" disabled={!sessions?.length}>
+            <Button variant="destructive" disabled={!data?.sessions?.length}>
               Revoke All Sessions
             </Button>
           </AlertDialogTrigger>
@@ -123,7 +120,7 @@ function RouteComponent() {
         </AlertDialog>
       </div>
 
-      {!sessions?.length ? (
+      {!data?.sessions?.length ? (
         <Card>
           <CardContent className="flex items-center justify-center h-32">
             <p className="text-muted-foreground">No active sessions found.</p>
@@ -131,7 +128,7 @@ function RouteComponent() {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {sessions.map((session) => (
+          {data.sessions.map((session) => (
             <Card key={session.token}>
               <CardHeader>
                 <div className="flex items-center justify-between">

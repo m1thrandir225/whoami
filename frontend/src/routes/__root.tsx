@@ -22,7 +22,11 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     const isAuthenticated = authStore.isAuthenticated()
 
     if (!isAuthenticated) {
-      if (location.pathname !== '/login' && location.pathname !== '/register') {
+      if (
+        location.pathname !== '/login' &&
+        location.pathname !== '/register' &&
+        location.pathname !== '/oauth-callback'
+      ) {
         throw redirect({
           to: '/login',
           search: {

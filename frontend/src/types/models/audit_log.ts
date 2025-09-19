@@ -1,3 +1,6 @@
+export type AuditLogResponse = {
+	audit_logs: AuditLog[]
+}
 export type AuditLog = {
 	id: number
 	user_id: number | null

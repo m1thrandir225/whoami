@@ -1,13 +1,13 @@
 import config from '@/lib/config'
-import { apiRequest } from './api.service'
-import type { Session } from '@/types/models/session'
 import type { GenericMessageResponse } from '@/types/api/generic.response'
+import type { SessionResponse } from '@/types/models/session'
+import { apiRequest } from './api.service'
 
 const sessionAPIUrl = `${config.apiUrl}/sessions`
 
 const sessionService = {
 	getUserSessions: () =>
-		apiRequest<Session[]>({
+		apiRequest<SessionResponse>({
 			headers: undefined,
 			protected: true,
 			method: 'GET',

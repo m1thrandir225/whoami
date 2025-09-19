@@ -1,3 +1,7 @@
+export type SessionResponse = {
+	sessions: Session[]
+}
+
 export type Session = {
 	user_id: number
 	token: string

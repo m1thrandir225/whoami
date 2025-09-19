@@ -29,6 +29,7 @@ type HTTPHandler struct {
 	sessionService          services.SessionService
 	config                  *util.Config
 	rateLimiter             *security.RateLimiter
+	oauthTempService        services.OAuthTempService
 }
 
 func NewHTTPHandler(
@@ -46,6 +47,7 @@ func NewHTTPHandler(
 	tokenBlacklist security.TokenBlacklist,
 	sessionService services.SessionService,
 	rateLimiter *security.RateLimiter,
+	oauthTempService services.OAuthTempService,
 	config util.Config,
 ) *HTTPHandler {
 	return &HTTPHandler{
@@ -64,5 +66,6 @@ func NewHTTPHandler(
 		sessionService:          sessionService,
 		config:                  &config,
 		rateLimiter:             rateLimiter,
+		oauthTempService:        oauthTempService,
 	}
 }

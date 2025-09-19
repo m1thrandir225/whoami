@@ -1,13 +1,13 @@
 import config from '@/lib/config'
-import { apiRequest } from './api.service'
-import type { AuditLog } from '@/types/models/audit_log'
 import type { GenericMessageResponse } from '@/types/api/generic.response'
+import type { AuditLogResponse } from '@/types/models/audit_log'
+import { apiRequest } from './api.service'
 
 const auditAPIUrl = `${config.apiUrl}/audit`
 
 const auditService = {
 	getAuditLogsByUserID: (userId: number) =>
-		apiRequest<AuditLog[]>({
+		apiRequest<AuditLogResponse>({
 			headers: undefined,
 			protected: true,
 			method: 'GET',
@@ -16,7 +16,7 @@ const auditService = {
 		}),
 
 	getAuditLogsByAction: (action: string) =>
-		apiRequest<AuditLog[]>({
+		apiRequest<AuditLogResponse>({
 			headers: undefined,
 			protected: true,
 			method: 'GET',
@@ -25,7 +25,7 @@ const auditService = {
 		}),
 
 	getAuditLogsByResourceType: (resourceType: string) =>
-		apiRequest<AuditLog[]>({
+		apiRequest<AuditLogResponse>({
 			headers: undefined,
 			protected: true,
 			method: 'GET',
@@ -34,7 +34,7 @@ const auditService = {
 		}),
 
 	getAuditLogsByResourceID: (resourceType: string, resourceId: number) =>
-		apiRequest<AuditLog[]>({
+		apiRequest<AuditLogResponse>({
 			headers: undefined,
 			protected: true,
 			method: 'GET',
@@ -43,7 +43,7 @@ const auditService = {
 		}),
 
 	getAuditLogsByIP: (ip: string) =>
-		apiRequest<AuditLog[]>({
+		apiRequest<AuditLogResponse>({
 			headers: undefined,
 			protected: true,
 			method: 'GET',
@@ -52,7 +52,7 @@ const auditService = {
 		}),
 
 	getAuditLogsByDateRange: (startDate: string, endDate: string) =>
-		apiRequest<AuditLog[]>({
+		apiRequest<AuditLogResponse>({
 			headers: undefined,
 			protected: true,
 			method: 'GET',
@@ -61,7 +61,7 @@ const auditService = {
 		}),
 
 	getRecentAuditLogs: () =>
-		apiRequest<AuditLog[]>({
+		apiRequest<AuditLogResponse>({
 			headers: undefined,
 			protected: true,
 			method: 'GET',
