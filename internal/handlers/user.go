@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/m1thrandir225/whoami/internal/domain"
@@ -86,7 +87,7 @@ func (h *HTTPHandler) Register(ctx *gin.Context) {
 		"ip_address":  deviceInfo.IPAddress,
 	}
 
-	if err := h.sessionService.CreateSession(ctx, user.ID, accessToken, deviceInfoMap); err != nil {
+	if err := h.sessionService.CreateSession(ctx, user.ID, accessToken, refreshToken, deviceInfoMap); err != nil {
 		fmt.Printf("Warning: Failed to create session: %v\n", err)
 	}
 
@@ -213,7 +214,7 @@ func (h *HTTPHandler) Login(ctx *gin.Context) {
 		"ip_address":  deviceInfo.IPAddress,
 	}
 
-	if err := h.sessionService.CreateSession(ctx, user.ID, accessToken, deviceInfoMap); err != nil {
+	if err := h.sessionService.CreateSession(ctx, user.ID, accessToken, refreshToken, deviceInfoMap); err != nil {
 		fmt.Printf("Warning: Failed to create session: %v\n", err)
 	}
 
@@ -402,9 +403,10 @@ func (h *HTTPHandler) Logout(ctx *gin.Context) {
 	}
 	token := fields[1]
 
-	// Revoke the session (this will also blacklist the token)
-	if err := h.sessionService.RevokeSession(ctx, token); err != nil {
+	// Revoke the session by token (this will also blacklist the token)
+	if err := h.sessionService.RevokeSessionByToken(ctx, token); err != nil {
 		log.Printf("Warning: Failed to revoke session: %v", err)
+		h.tokenBlacklist.BlacklistToken(ctx, token, 24*time.Hour)
 	}
 
 	// Log logout action
@@ -436,8 +438,25 @@ func (h *HTTPHandler) RefreshToken(ctx *gin.Context) {
 		return
 	}
 
+	currentSession, err := h.sessionService.GetSessionByRefreshToken(ctx, req.RefreshToken)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	accessToken, accessPayload, err := h.tokenMaker.CreateToken(payload.UserID, h.config.AccessTokenDuration)
 	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	refreshToken, refreshPayload, err := h.tokenMaker.CreateToken(payload.UserID, h.config.RefreshTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	if err := h.sessionService.UpdateSessionTokens(ctx, currentSession.ID, accessToken, refreshToken); err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -448,8 +467,10 @@ func (h *HTTPHandler) RefreshToken(ctx *gin.Context) {
 	})
 
 	response := refreshTokenResponse{
-		AccessToken: accessToken,
-		ExpiresAt:   accessPayload.ExpiredAt,
+		AccessToken:           accessToken,
+		AccessTokenExpiresAt:  accessPayload.ExpiredAt,
+		RefreshToken:          refreshToken,
+		RefreshTokenExpiresAt: refreshPayload.ExpiredAt,
 	}
 
 	ctx.JSON(http.StatusOK, response)

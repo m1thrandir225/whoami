@@ -48,25 +48,26 @@ func (h *HTTPHandler) RevokeSession(ctx *gin.Context) {
 	}
 
 	// Verify the session belongs to the user
-	session, err := h.sessionService.GetSession(ctx, req.Token)
+	session, err := h.sessionService.GetSessionByID(ctx, req.SessionID)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, errorResponse(errors.New("session not found")))
 		return
 	}
+
 	if session.UserID != payload.UserID {
 		ctx.JSON(http.StatusForbidden, errorResponse(errors.New("not authorized to revoke this session")))
 		return
 	}
 
-	if err := h.sessionService.RevokeSession(ctx, req.Token); err != nil {
+	if err := h.sessionService.RevokeSession(ctx, req.SessionID); err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
 	// Log session revocation
 	h.auditService.LogUserAction(ctx, payload.UserID, domain.AuditActionSessionRevoke, domain.AuditResourceTypeSession, payload.UserID, ctx.Request, map[string]interface{}{
-		"token":   req.Token,
-		"success": true,
+		"session_id": req.SessionID,
+		"success":    true,
 	})
 
 	ctx.JSON(http.StatusOK, messageResponse("Session revoked successfully"))

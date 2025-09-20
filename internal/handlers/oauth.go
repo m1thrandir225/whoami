@@ -162,7 +162,7 @@ func (h *HTTPHandler) OAuthCallback(ctx *gin.Context) {
 		"ip_address":  deviceInfo.IPAddress,
 	}
 
-	if err := h.sessionService.CreateSession(ctx, user.ID, accessToken, deviceInfoMap); err != nil {
+	if err := h.sessionService.CreateSession(ctx, user.ID, accessToken, refreshToken, deviceInfoMap); err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}

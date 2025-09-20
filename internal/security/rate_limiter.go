@@ -29,12 +29,12 @@ type RateLimitResult struct {
 
 var (
 	DefaultRateLimit = RateLimitConfig{
-		Requests: 100,
+		Requests: 1000,
 		Window:   time.Hour * 1,
 	}
 
 	AuthRateLimit = RateLimitConfig{
-		Requests: 5,
+		Requests: 50,
 		Window:   15 * time.Minute,
 	}
 

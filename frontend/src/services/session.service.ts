@@ -15,13 +15,14 @@ const sessionService = {
 			url: sessionAPIUrl,
 		}),
 
-	revokeSession: (token: string) =>
+	revokeSession: (sessionID: string) =>
 		apiRequest<GenericMessageResponse>({
 			headers: undefined,
 			protected: true,
 			method: 'DELETE',
 			params: undefined,
-			url: `${sessionAPIUrl}/${token}`,
+			url: `${sessionAPIUrl}`,
+			data: { session_id: sessionID },
 		}),
 
 	revokeAllSessions: () =>

@@ -5,8 +5,10 @@ export type SessionResponse = {
 }
 
 export type Session = {
+	id: string
 	user_id: number
 	token: string
+	refresh_token: string
 	device_info: UserDevice
 	ip_address: string
 	user_agent: string

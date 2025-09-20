@@ -1,5 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Monitor, Smartphone, Tablet, Shield, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
+
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -7,23 +10,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
-import { Trash2, Shield, Smartphone, Monitor, Tablet } from 'lucide-react'
-import { toast } from 'sonner'
 import sessionService from '@/services/session.service'
 import { useAuthStore } from '@/stores/auth'
+import { PageLoader } from '@/components/ui/loader'
+import { createFileRoute } from '@tanstack/react-router'
+import type { UserDevice } from '@/types/models/user_device'
 
 export const Route = createFileRoute('/_pathlessLayout/sessions')({
   component: RouteComponent,
@@ -31,7 +23,8 @@ export const Route = createFileRoute('/_pathlessLayout/sessions')({
 
 function RouteComponent() {
   const queryClient = useQueryClient()
-  const accessToken = useAuthStore((state) => state.accessToken)
+  const authStore = useAuthStore()
+  const currentAccessToken = authStore.accessToken
 
   const { data, isLoading } = useQuery({
     queryKey: ['user-sessions'],
@@ -39,7 +32,7 @@ function RouteComponent() {
   })
 
   const revokeSessionMutation = useMutation({
-    mutationFn: (token: string) => sessionService.revokeSession(token),
+    mutationFn: (sessionId: string) => sessionService.revokeSession(sessionId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-sessions'] })
       toast.success('Session revoked successfully')
@@ -80,46 +73,41 @@ function RouteComponent() {
     return `IP: ${ipAddress}`
   }
 
+  const getDeviceName = (deviceInfo: UserDevice) => {
+    return (
+      deviceInfo.device_name || `${deviceInfo.device_type || 'Unknown'} Device`
+    )
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString()
+  }
+
+  const isCurrentSession = (session: any) => {
+    return session.token === currentAccessToken
+  }
+
   if (isLoading) {
-    return <div>Loading sessions...</div>
+    return <PageLoader text="Loading sessions..." />
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Active Sessions</h2>
+          <h1 className="text-2xl font-bold">Active Sessions</h1>
           <p className="text-muted-foreground">
-            Manage your active sessions across all devices.
+            Manage your active login sessions across devices
           </p>
         </div>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="destructive" disabled={!data?.sessions?.length}>
-              Revoke All Sessions
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Revoke All Sessions</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will sign you out of all devices and locations. You'll need
-                to sign in again.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => revokeAllSessionsMutation.mutate()}
-                disabled={revokeAllSessionsMutation.isPending}
-              >
-                {revokeAllSessionsMutation.isPending
-                  ? 'Revoking...'
-                  : 'Revoke All'}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <Button
+          variant="destructive"
+          onClick={() => revokeAllSessionsMutation.mutate()}
+          disabled={revokeAllSessionsMutation.isPending}
+        >
+          <Trash2 className="w-4 h-4 mr-2" />
+          Revoke All Sessions
+        </Button>
       </div>
 
       {!data?.sessions?.length ? (
@@ -131,86 +119,84 @@ function RouteComponent() {
       ) : (
         <div className="grid gap-4">
           {data.sessions.map((session) => (
-            <Card key={session.token}>
+            <Card key={session.id}>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     {getDeviceIcon(session.user_agent)}
                     <div>
                       <CardTitle className="text-base">
-                        {session.device_info.device_name || 'Unknown Device'}
+                        {getDeviceName(session.device_info)}
                       </CardTitle>
                       <CardDescription>
-                        {getLocation(session.device_info.ip_address)}
+                        {getLocation(session.ip_address)}
                       </CardDescription>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {session.token === accessToken ? (
+                    {isCurrentSession(session) ? (
                       <Badge variant="secondary">
                         <Shield className="w-3 h-3 mr-1" />
                         Current Session
                       </Badge>
                     ) : (
-                      <Badge variant="outline">Inactive</Badge>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => revokeSessionMutation.mutate(session.id)}
+                        disabled={revokeSessionMutation.isPending}
+                      >
+                        <Trash2 className="w-3 h-3 mr-1" />
+                        Revoke
+                      </Button>
                     )}
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={session.token === accessToken}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Revoke Session</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will sign out this device. You'll need to sign
-                            in again on this device.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() =>
-                              revokeSessionMutation.mutate(session.token)
-                            }
-                            disabled={revokeSessionMutation.isPending}
-                          >
-                            {revokeSessionMutation.isPending
-                              ? 'Revoking...'
-                              : 'Revoke'}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="font-medium">Started:</span>
-                    <p className="text-muted-foreground">
-                      {new Date(session.created_at).toLocaleString()}
+                    <p className="text-muted-foreground">Created</p>
+                    <p>{formatDate(session.created_at)}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Last Active</p>
+                    <p>{formatDate(session.last_active)}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Device Type</p>
+                    <p className="capitalize">
+                      {session.device_info.device_type || 'Unknown'}
                     </p>
                   </div>
                   <div>
-                    <span className="font-medium">Last Active:</span>
-                    <p className="text-muted-foreground">
-                      {new Date(session.last_active).toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="col-span-2">
-                    <span className="font-medium">User Agent:</span>
-                    <p className="text-muted-foreground text-xs mt-1 break-all">
-                      {session.device_info.user_agent}
+                    <p className="text-muted-foreground">Browser</p>
+                    <p>
+                      {session.device_info.user_agent?.split(' ')[0] ||
+                        'Unknown'}
                     </p>
                   </div>
                 </div>
+
+                {/* Debug info - remove in production */}
+                <details className="mt-4">
+                  <summary className="text-xs text-muted-foreground cursor-pointer">
+                    Session Details
+                  </summary>
+                  <div className="mt-2 text-xs bg-muted p-2 rounded">
+                    <p>
+                      <strong>Session ID:</strong> {session.id}
+                    </p>
+                    <p>
+                      <strong>Access Token:</strong>{' '}
+                      {session.token.slice(0, 20)}...
+                    </p>
+                    <p>
+                      <strong>Refresh Token:</strong>{' '}
+                      {session.refresh_token?.slice(0, 20)}...
+                    </p>
+                  </div>
+                </details>
               </CardContent>
             </Card>
           ))}

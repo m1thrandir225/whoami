@@ -50,7 +50,7 @@ type verifyResetTokenRequest struct {
 }
 
 type revokeSessionRequest struct {
-	Token string `json:"token" binding:"required"`
+	SessionID string `json:"session_id" binding:"required"`
 }
 
 type revokeAllSessionsRequest struct {
