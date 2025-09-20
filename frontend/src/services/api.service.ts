@@ -68,6 +68,7 @@ const createApiInstance = (): AxiosInstance => {
 			if (!originalRequest || originalRequest._isRetry) {
 				return Promise.reject(error)
 			}
+			console.log('originalRequest', originalRequest)
 
 			const status = error.response?.status
 
@@ -90,14 +91,14 @@ const createApiInstance = (): AxiosInstance => {
 				isRefreshing = true
 
 				try {
-					const authStore = useAuthStore.getState()
-					const canRefresh = authStore.checkAuth()
+					const canRefresh = useAuthStore.getState().checkAuth()
+					console.log('canRefresh', canRefresh)
 
 					if (!canRefresh) {
 						throw new Error('User is logged out or refresh token expired')
 					}
 
-					const refreshToken = authStore.refreshToken
+					const refreshToken = useAuthStore.getState().refreshToken
 
 					if (!refreshToken) {
 						throw new Error('Missing refresh token')
@@ -110,7 +111,9 @@ const createApiInstance = (): AxiosInstance => {
 						throw new Error('Refresh endpoint did not return an access token')
 					}
 
-					authStore.setAccessToken(newTokens.access_token, newTokens.expires_at)
+					useAuthStore
+						.getState()
+						.setAccessToken(newTokens.access_token, newTokens.expires_at)
 
 					originalRequest.headers['Authorization'] =
 						`Bearer ${newTokens.access_token}`
@@ -121,7 +124,7 @@ const createApiInstance = (): AxiosInstance => {
 				} catch (refreshError) {
 					processQueue(refreshError, null)
 
-					useAuthStore.getState().logout()
+					//useAuthStore.getState().logout()
 
 					return Promise.reject(refreshError)
 				} finally {
@@ -157,6 +160,7 @@ export const apiRequest = async <T>(config: ApiRequestOptions) => {
 
 		return response.data
 	} catch (e: unknown) {
+		console.error(e)
 		if (e instanceof AxiosError) {
 			throw new Error(e.response?.data.error)
 		} else {
@@ -196,7 +200,7 @@ export const multipartApiRequest = async <
 		return response.data
 	} catch (e: unknown) {
 		if (e instanceof AxiosError) {
-			throw new Error(e.response?.data.error)
+			throw new Error(e.response?.data.detail)
 		} else {
 			throw new Error('Unknown error happened.')
 		}

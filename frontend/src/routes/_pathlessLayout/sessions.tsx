@@ -23,6 +23,7 @@ import {
 import { Trash2, Shield, Smartphone, Monitor, Tablet } from 'lucide-react'
 import { toast } from 'sonner'
 import sessionService from '@/services/session.service'
+import { useAuthStore } from '@/stores/auth'
 
 export const Route = createFileRoute('/_pathlessLayout/sessions')({
   component: RouteComponent,
@@ -30,6 +31,7 @@ export const Route = createFileRoute('/_pathlessLayout/sessions')({
 
 function RouteComponent() {
   const queryClient = useQueryClient()
+  const accessToken = useAuthStore((state) => state.accessToken)
 
   const { data, isLoading } = useQuery({
     queryKey: ['user-sessions'],
@@ -136,15 +138,15 @@ function RouteComponent() {
                     {getDeviceIcon(session.user_agent)}
                     <div>
                       <CardTitle className="text-base">
-                        {session.device_info.name || 'Unknown Device'}
+                        {session.device_info.device_name || 'Unknown Device'}
                       </CardTitle>
                       <CardDescription>
-                        {getLocation(session.ip_address)}
+                        {getLocation(session.device_info.ip_address)}
                       </CardDescription>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {session.is_active ? (
+                    {session.token === accessToken ? (
                       <Badge variant="secondary">
                         <Shield className="w-3 h-3 mr-1" />
                         Current Session
@@ -157,7 +159,7 @@ function RouteComponent() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          disabled={session.is_active}
+                          disabled={session.token === accessToken}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -205,7 +207,7 @@ function RouteComponent() {
                   <div className="col-span-2">
                     <span className="font-medium">User Agent:</span>
                     <p className="text-muted-foreground text-xs mt-1 break-all">
-                      {session.user_agent}
+                      {session.device_info.user_agent}
                     </p>
                   </div>
                 </div>

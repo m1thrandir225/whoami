@@ -71,9 +71,9 @@ func (r *dataExportsRepository) GetDataExportsByUserID(ctx context.Context, user
 
 func (r *dataExportsRepository) UpdateDataExportStatus(ctx context.Context, req domain.UpdateDataExportStatusAction) (*domain.DataExport, error) {
 	dbExport, err := r.store.UpdateDataExportStatus(ctx, db.UpdateDataExportStatusParams{
-		ID:     req.ID,
-		Status: req.Status,
-		UserID: req.UserID,
+		ID:      req.ID,
+		Column2: req.Status,
+		UserID:  req.UserID,
 	})
 	if err != nil {
 		return nil, err

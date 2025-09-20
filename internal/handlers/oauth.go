@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -124,6 +125,11 @@ func (h *HTTPHandler) OAuthCallback(ctx *gin.Context) {
 		return
 	}
 
+	//Update last login time
+	if err := h.userService.UpdateLastLogin(ctx, user.ID); err != nil {
+		log.Printf("Warning: Failed to update last login time: %v", err)
+	}
+
 	// Generate tokens
 	accessToken, accessPayload, err := h.tokenMaker.CreateToken(user.ID, h.config.AccessTokenDuration)
 	if err != nil {
@@ -141,7 +147,11 @@ func (h *HTTPHandler) OAuthCallback(ctx *gin.Context) {
 	device, err := h.userDevicesService.GetOrCreateDevice(ctx, user.ID, deviceInfo)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
+		device = &domain.UserDevice{
+			DeviceID:   deviceInfo.DeviceID,
+			DeviceName: deviceInfo.DeviceName,
+			DeviceType: deviceInfo.DeviceType,
+		}
 	}
 
 	deviceInfoMap := map[string]string{

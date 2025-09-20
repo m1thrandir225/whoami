@@ -56,6 +56,7 @@ export const useAuthStore = create<AuthStore>()(
 				) {
 					return false
 				}
+
 				if (refreshTokenExpiresAt.getTime() < Date.now()) {
 					return false
 				}
@@ -90,6 +91,23 @@ export const useAuthStore = create<AuthStore>()(
 		}),
 		{
 			name: 'auth',
+			onRehydrateStorage: () => (state) => {
+				if (state) {
+					if (
+						state.accessTokenExpiresAt &&
+						typeof state.accessTokenExpiresAt === 'string'
+					) {
+						state.accessTokenExpiresAt = new Date(state.accessTokenExpiresAt)
+					}
+
+					if (
+						state.refreshTokenExpiresAt &&
+						typeof state.refreshTokenExpiresAt === 'string'
+					) {
+						state.refreshTokenExpiresAt = new Date(state.refreshTokenExpiresAt)
+					}
+				}
+			},
 		},
 	),
 )

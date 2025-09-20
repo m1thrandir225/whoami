@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -100,11 +101,15 @@ func (s *dataExportsService) ProcessPendingExports(ctx context.Context) error {
 	for _, export := range pendingExports {
 		if err := s.processExport(ctx, &export); err != nil {
 			// Mark as failed
-			s.dataExportsRepo.UpdateDataExportStatus(ctx, domain.UpdateDataExportStatusAction{
+			if _, updateErr := s.dataExportsRepo.UpdateDataExportStatus(ctx, domain.UpdateDataExportStatusAction{
 				ID:     export.ID,
 				UserID: export.UserID,
 				Status: domain.DataExportStatusFailed,
-			})
+			}); updateErr != nil {
+				log.Printf("failed to mark export as failed: %v", updateErr)
+			} else {
+				log.Printf("marked export as failed: %v", export.ID)
+			}
 			continue
 		}
 	}
@@ -180,7 +185,7 @@ func (s *dataExportsService) processExport(ctx context.Context, export *domain.D
 	}
 
 	// Mark as completed
-	_, err = s.dataExportsRepo.UpdateDataExportStatus(ctx, domain.UpdateDataExportStatusAction{
+	completedExport, err := s.dataExportsRepo.UpdateDataExportStatus(ctx, domain.UpdateDataExportStatusAction{
 		ID:     export.ID,
 		UserID: export.UserID,
 		Status: domain.DataExportStatusCompleted,
@@ -189,11 +194,18 @@ func (s *dataExportsService) processExport(ctx context.Context, export *domain.D
 		return fmt.Errorf("failed to mark export as completed: %w", err)
 	}
 
+	log.Printf("Successfully marked export ID %d as completed. Final status: %s, CompletedAt: %v",
+		export.ID, completedExport.Status, completedExport.CompletedAt)
+
 	return nil
 }
 
 func (s *dataExportsService) generateUserDataExport(ctx context.Context, userID int64) map[string]interface{} {
-	user, _ := s.userRepo.GetUserByID(ctx, userID)
+	user, err := s.userRepo.GetUserByID(ctx, userID)
+	if err != nil {
+		log.Printf("failed to get user by id: %v", err)
+		user = nil
+	}
 
 	return map[string]interface{}{
 		"export_type": "user_data",
@@ -203,7 +215,11 @@ func (s *dataExportsService) generateUserDataExport(ctx context.Context, userID 
 }
 
 func (s *dataExportsService) generateAuditLogsExport(ctx context.Context, userID int64) map[string]interface{} {
-	logs, _ := s.auditRepo.GetAuditLogsByUserID(ctx, userID, 1000)
+	logs, err := s.auditRepo.GetAuditLogsByUserID(ctx, userID, 1000)
+	if err != nil {
+		log.Printf("failed to get audit logs by user id: %v", err)
+		logs = nil
+	}
 
 	return map[string]interface{}{
 		"export_type": "audit_logs",
@@ -213,7 +229,11 @@ func (s *dataExportsService) generateAuditLogsExport(ctx context.Context, userID
 }
 
 func (s *dataExportsService) generateLoginHistoryExport(ctx context.Context, userID int64) map[string]interface{} {
-	attempts, _ := s.loginAttemptsRepo.GetLoginAttemptsByUserID(ctx, userID, 1000)
+	attempts, err := s.loginAttemptsRepo.GetLoginAttemptsByUserID(ctx, userID, 1000)
+	if err != nil {
+		log.Printf("failed to get login attempts by user id: %v", err)
+		attempts = nil
+	}
 
 	return map[string]interface{}{
 		"export_type":    "login_history",
@@ -223,9 +243,23 @@ func (s *dataExportsService) generateLoginHistoryExport(ctx context.Context, use
 }
 
 func (s *dataExportsService) generateCompleteExport(ctx context.Context, userID int64) map[string]interface{} {
-	user, _ := s.userRepo.GetUserByID(ctx, userID)
-	logs, _ := s.auditRepo.GetAuditLogsByUserID(ctx, userID, 1000)
-	attempts, _ := s.loginAttemptsRepo.GetLoginAttemptsByUserID(ctx, userID, 1000)
+	user, err := s.userRepo.GetUserByID(ctx, userID)
+	if err != nil {
+		log.Printf("failed to get user by id: %v", err)
+		user = nil
+	}
+
+	logs, err := s.auditRepo.GetAuditLogsByUserID(ctx, userID, 1000)
+	if err != nil {
+		log.Printf("failed to get audit logs by user id: %v", err)
+		logs = nil
+	}
+
+	attempts, err := s.loginAttemptsRepo.GetLoginAttemptsByUserID(ctx, userID, 1000)
+	if err != nil {
+		log.Printf("failed to get login attempts by user id: %v", err)
+		attempts = nil
+	}
 
 	return map[string]interface{}{
 		"export_type":    "complete",

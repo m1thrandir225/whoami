@@ -147,12 +147,18 @@ func main() {
 	tokenBlacklist := security.NewTokenBlacklist(redisClient)
 	sessionService := services.NewSessionService(redisClient, tokenBlacklist)
 	userDevicesService := services.NewUserDevicesService(userDevicesRepository)
+
+	exportDir := "./exports"
+	if err := os.MkdirAll(exportDir, 0755); err != nil {
+		log.Fatalf("failed to create export directory: %v", err)
+	}
+
 	dataExportsService := services.NewDataExportsService(
 		dataExportsRepository,
 		userRepository,
 		auditLogsRepository,
 		loginAttemptsRepository,
-		"./exports", // Export directory
+		exportDir,
 	)
 	oauthService := services.NewOAuthService(
 		oauthAccountsRepository,
@@ -181,6 +187,38 @@ func main() {
 		oauthTempService,
 		config,
 	)
+
+	go func() {
+		ticker := time.NewTicker(30 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				if err := dataExportsService.ProcessPendingExports(ctx); err != nil {
+					log.Printf("failed to process pending exports: %v", err)
+				}
+			}
+		}
+	}()
+
+	go func() {
+		ticker := time.NewTicker(24 * time.Hour)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				if err := dataExportsService.CleanupExpiredExports(ctx); err != nil {
+					log.Printf("failed to cleanup expired exports: %v", err)
+				}
+			}
+		}
+	}()
 
 	if config.Environment == "production" {
 		gin.SetMode(gin.ReleaseMode)

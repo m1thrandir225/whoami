@@ -1,11 +1,11 @@
 package security
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type DeviceInfo struct {
@@ -23,7 +23,7 @@ func ExtractDeviceInfo(ctx *gin.Context) *DeviceInfo {
 	// Generate or extract device ID from headers
 	deviceID := ctx.GetHeader("X-Device-ID")
 	if deviceID == "" {
-		deviceID = generateDeviceID()
+		deviceID = generateDeviceIDFromFingerprint(userAgent, ipAddress)
 	}
 
 	// Parse user agent for device info
@@ -37,11 +37,6 @@ func ExtractDeviceInfo(ctx *gin.Context) *DeviceInfo {
 		IPAddress:  ipAddress,
 	}
 }
-
-func generateDeviceID() string {
-	return uuid.New().String()
-}
-
 func parseUserAgent(userAgent string) (deviceName, deviceType string) {
 	ua := strings.ToLower(userAgent)
 
@@ -92,4 +87,11 @@ func parseUserAgent(userAgent string) (deviceName, deviceType string) {
 	deviceName = fmt.Sprintf("%s on %s", browserInfo, osInfo)
 
 	return deviceName, deviceType
+}
+
+func generateDeviceIDFromFingerprint(userAgent, ipAddress string) string {
+	fingerprint := fmt.Sprintf("%s_%s", userAgent, ipAddress)
+	h := sha256.Sum256([]byte(fingerprint))
+
+	return fmt.Sprintf("%x", h[:16])
 }

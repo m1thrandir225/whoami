@@ -19,8 +19,8 @@ ORDER BY created_at DESC;
 
 -- name: UpdateDataExportStatus :one
 UPDATE data_exports
-SET status = $2,
-    completed_at = CASE WHEN $2 = 'completed' THEN NOW() ELSE completed_at END
+SET status = $2::text,
+    completed_at = CASE WHEN $2::text = 'completed' THEN NOW() ELSE completed_at END
 WHERE id = $1 AND user_id = $3
 RETURNING *;
 

@@ -277,3 +277,14 @@ func (q *Queries) UpdateUserPrivacySettings(ctx context.Context, arg UpdateUserP
 	_, err := q.db.Exec(ctx, updateUserPrivacySettings, arg.ID, arg.PrivacySettings)
 	return err
 }
+
+const verifyUserEmail = `-- name: VerifyUserEmail :exec
+UPDATE users
+SET email_verified = TRUE, updated_at = NOW()
+WHERE id = $1
+`
+
+func (q *Queries) VerifyUserEmail(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, verifyUserEmail, id)
+	return err
+}

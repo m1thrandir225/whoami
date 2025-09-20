@@ -1,5 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -7,19 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
 import {
   Select,
   SelectContent,
@@ -27,20 +14,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import exportsService from '@/services/exports.service'
+import securityService from '@/services/security.service'
+import { DataExportTypes } from '@/types/models/data_export'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
 import {
   AlertTriangle,
+  CheckCircle,
+  Clock,
   Download,
   FileText,
   Shield,
   ShieldAlert,
-  CheckCircle,
-  Clock,
 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import securityService from '@/services/security.service'
-import exportsService from '@/services/exports.service'
-import { DataExportTypes } from '@/types/models/data_export'
 
 export const Route = createFileRoute('/_pathlessLayout/security')({
   component: RouteComponent,
@@ -98,7 +87,7 @@ function RouteComponent() {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `export-${variables}.zip`
+      a.download = `export-${variables}.json`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)

@@ -18,6 +18,7 @@ WORKDIR /app
 COPY --from=builder /app/whoami .
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN mkdir -p /app/exports && chown -R appuser:appgroup /app/exports
 RUN chmod +x /app/whoami
 USER appuser
 

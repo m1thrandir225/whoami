@@ -40,7 +40,7 @@ const authService = {
 			protected: false,
 			method: 'POST',
 			params: undefined,
-			url: `${authAPIUrl}/refresh-token`,
+			url: `${authAPIUrl}/refresh`,
 			data: input,
 		}),
 	getCurrentUser: () =>

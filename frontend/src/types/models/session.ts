@@ -1,3 +1,5 @@
+import type { UserDevice } from './user_device'
+
 export type SessionResponse = {
 	sessions: Session[]
 }
@@ -5,7 +7,7 @@ export type SessionResponse = {
 export type Session = {
 	user_id: number
 	token: string
-	device_info: Record<string, string>
+	device_info: UserDevice
 	ip_address: string
 	user_agent: string
 	created_at: string

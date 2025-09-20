@@ -1,4 +1,3 @@
-import { GalleryVerticalEnd } from 'lucide-react'
 import * as React from 'react'
 
 import {
@@ -11,9 +10,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
-import { NavUser } from './nav-user'
 import { Link } from '@tanstack/react-router'
-import { IconZoom } from '@tabler/icons-react'
+import { NavUser } from './nav-user'
+import { Logo } from './ui/logo'
 
 // This is sample data.
 const data = {
@@ -46,17 +45,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar variant="floating" {...props}>
       <SidebarHeader>
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link to="/">
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <IconZoom className="size-4" />
-                </div>
-                <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-medium font-mono">whoami</span>
-                </div>
-              </Link>
-            </SidebarMenuButton>
+          <SidebarMenuItem className="w-full block">
+            <Link
+              to="/"
+              className="w-full self-center flex items-center justify-center py-4 hover:opacity-60"
+            >
+              <Logo variant="full" className="self-center" />
+            </Link>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
@@ -66,9 +61,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             {data.navMain.map((item) => (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild>
-                  <a href={item.url} className="font-medium">
+                  <Link
+                    to={item.url}
+                    className="font-medium transition-all ease-out duration-100"
+                    activeProps={{
+                      className:
+                        'bg-sidebar-accent text-sidebar-accent-foreground border !font-semibold ',
+                    }}
+                  >
                     {item.title}
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}

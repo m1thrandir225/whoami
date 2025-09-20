@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -403,8 +404,7 @@ func (h *HTTPHandler) Logout(ctx *gin.Context) {
 
 	// Revoke the session (this will also blacklist the token)
 	if err := h.sessionService.RevokeSession(ctx, token); err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
+		log.Printf("Warning: Failed to revoke session: %v", err)
 	}
 
 	// Log logout action
@@ -436,7 +436,7 @@ func (h *HTTPHandler) RefreshToken(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, _, err := h.tokenMaker.CreateToken(payload.UserID, h.config.AccessTokenDuration)
+	accessToken, accessPayload, err := h.tokenMaker.CreateToken(payload.UserID, h.config.AccessTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -449,7 +449,7 @@ func (h *HTTPHandler) RefreshToken(ctx *gin.Context) {
 
 	response := refreshTokenResponse{
 		AccessToken: accessToken,
-		ExpiresAt:   payload.ExpiredAt,
+		ExpiresAt:   accessPayload.ExpiredAt,
 	}
 
 	ctx.JSON(http.StatusOK, response)

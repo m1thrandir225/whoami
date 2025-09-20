@@ -1,7 +1,7 @@
 import RegisterForm from '@/components/register-form'
+import { Logo } from '@/components/ui/logo'
 import authService from '@/services/auth.service'
 import type { RegisterRequest } from '@/types/api/auth.requests'
-import { IconZoom } from '@tabler/icons-react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 
@@ -19,11 +19,10 @@ function RouteComponent() {
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
         <Link
-          to="/"
+          to="/register"
           className="flex items-center gap-2 self-center font-medium font-mono"
         >
-          <IconZoom />
-          whoami
+          <Logo variant="full" />
         </Link>
         <RegisterForm
           submitValues={async (values) => {

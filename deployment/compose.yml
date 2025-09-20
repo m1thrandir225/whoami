@@ -85,6 +85,8 @@ services:
       - "${HTTP_PORT}:${HTTP_PORT}"
     volumes:
       - ../deployment/certs:/certs:ro
+      - whoami-exports:/app/exports
 volumes:
   whoami-db:
   whoami-redis:
+  whoami-exports:

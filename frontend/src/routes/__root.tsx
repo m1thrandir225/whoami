@@ -11,6 +11,7 @@ import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import type { QueryClient } from '@tanstack/react-query'
 import { useAuthStore } from '@/stores/auth'
 import { Toaster } from '@/components/ui/sonner'
+import { PageLoader } from '@/components/ui/loader'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -36,6 +37,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       }
     }
   },
+  pendingComponent: () => <PageLoader />,
   component: () => (
     <>
       <Outlet />

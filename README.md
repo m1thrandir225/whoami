@@ -1,6 +1,8 @@
-# whoami (WIP)
+<div align="center">
+    <img src='./.github/images/whoami-logo.png' height=100/>
+</div>
 
-**This project is actively under development and is a work-in-progress**.
+# whoami
 
 A Central Authentication Service written entirely in Go. The service is intented to be fully Open-Source and used as a seperate service in your application. I plan to make it easily plug-and-play for microservices architectures but also for maybe just frontend applications that to use some authentication features instead of using something like Firebase or Supabase.
 

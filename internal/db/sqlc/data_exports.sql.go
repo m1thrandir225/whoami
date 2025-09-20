@@ -215,20 +215,20 @@ func (q *Queries) UpdateDataExportFile(ctx context.Context, arg UpdateDataExport
 
 const updateDataExportStatus = `-- name: UpdateDataExportStatus :one
 UPDATE data_exports
-SET status = $2,
-    completed_at = CASE WHEN $2 = 'completed' THEN NOW() ELSE completed_at END
+SET status = $2::text,
+    completed_at = CASE WHEN $2::text = 'completed' THEN NOW() ELSE completed_at END
 WHERE id = $1 AND user_id = $3
 RETURNING id, user_id, export_type, status, file_path, file_size, expires_at, created_at, completed_at
 `
 
 type UpdateDataExportStatusParams struct {
-	ID     int64  `json:"id"`
-	Status string `json:"status"`
-	UserID int64  `json:"user_id"`
+	ID      int64  `json:"id"`
+	Column2 string `json:"column_2"`
+	UserID  int64  `json:"user_id"`
 }
 
 func (q *Queries) UpdateDataExportStatus(ctx context.Context, arg UpdateDataExportStatusParams) (DataExport, error) {
-	row := q.db.QueryRow(ctx, updateDataExportStatus, arg.ID, arg.Status, arg.UserID)
+	row := q.db.QueryRow(ctx, updateDataExportStatus, arg.ID, arg.Column2, arg.UserID)
 	var i DataExport
 	err := row.Scan(
 		&i.ID,
