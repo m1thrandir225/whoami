@@ -60,3 +60,8 @@ export type ResetRateLimitRequest = {
 	ip?: string
 	user_id: number
 }
+
+export type VerifyResetOTPRequest = {
+	token: string
+	otp: string
+}

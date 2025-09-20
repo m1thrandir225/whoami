@@ -15,7 +15,7 @@ type User struct {
 	Active            bool            `json:"active"`
 	PrivacySettings   PrivacySettings `json:"privacy_settings"`
 	LastLoginAt       *time.Time      `json:"last_login_at"`
-	PasswordChangedAt time.Time       `json:"password_changed_at"`
+	PasswordChangedAt *time.Time      `json:"password_changed_at"`
 	UpdatedAt         time.Time       `json:"updated_at"`
 	CreatedAt         time.Time       `json:"created_at"`
 }

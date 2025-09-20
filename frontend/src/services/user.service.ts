@@ -53,6 +53,16 @@ const userService = {
 			params: undefined,
 			url: `${userAPIUrl}/${userId}/activate`,
 		}),
+
+	setPassword: (password: string) =>
+		apiRequest<GenericMessageResponse>({
+			headers: undefined,
+			protected: true,
+			method: 'POST',
+			params: undefined,
+			url: `${userAPIUrl}/set-password`,
+			data: { password },
+		}),
 }
 
 export default userService

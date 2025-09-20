@@ -124,6 +124,17 @@ func (q *Queries) GetUnusedPasswordResets(ctx context.Context, userID int64) ([]
 	return items, nil
 }
 
+const incrementPasswordResetCounter = `-- name: IncrementPasswordResetCounter :exec
+UPDATE password_resets
+SET counter = counter + 1
+WHERE id = $1
+`
+
+func (q *Queries) IncrementPasswordResetCounter(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, incrementPasswordResetCounter, id)
+	return err
+}
+
 const markPasswordResetAsUsed = `-- name: MarkPasswordResetAsUsed :exec
 UPDATE password_resets
 SET used_at = NOW()

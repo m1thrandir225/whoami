@@ -3,6 +3,7 @@ import { apiRequest } from './api.service'
 import type {
 	RequestPasswordResetRequest,
 	ResetPasswordRequest,
+	VerifyResetOTPRequest,
 	VerifyResetTokenRequest,
 } from '@/types/api/auth.requests'
 import type { VerifyResetTokenResponse } from '@/types/api/auth.responses'
@@ -37,6 +38,15 @@ const passwordResetService = {
 			method: 'POST',
 			data: input,
 			url: `${passwordResetAPIUrl}/reset`,
+			params: undefined,
+		}),
+	verifyResetOTP: (input: VerifyResetOTPRequest) =>
+		apiRequest<GenericMessageResponse>({
+			protected: false,
+			headers: undefined,
+			method: 'POST',
+			data: input,
+			url: `${passwordResetAPIUrl}/verify-otp`,
 			params: undefined,
 		}),
 }

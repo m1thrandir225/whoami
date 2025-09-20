@@ -25,6 +25,7 @@ func SetupRoutes(router *gin.Engine, handler *HTTPHandler) {
 		{
 			passwordReset.POST("/request", handler.RequestPasswordReset)
 			passwordReset.POST("/verify", handler.VerifyResetToken)
+			passwordReset.POST("/verify-otp", handler.VerifyResetOTP)
 			passwordReset.POST("/reset", handler.ResetPassword)
 		}
 
@@ -49,6 +50,7 @@ func SetupRoutes(router *gin.Engine, handler *HTTPHandler) {
 				user.PUT("/:id", handler.UpdateUser)
 				user.PUT("/:id/privacy-settings", handler.UpdateUserPrivacySettings)
 				user.POST("/update-password", handler.UpdatePassword)
+				user.POST("/set-password", handler.SetPassword)
 			}
 
 			sessions := protected.Group("/sessions")

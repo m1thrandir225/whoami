@@ -10,7 +10,11 @@ export type User = {
 	active: boolean
 	privacy_settings: PrivacySettings
 	last_login_at: string | null
-	password_changed_at: string
+	password_changed_at: string | null
 	updated_at: string
 	created_at: string
+}
+
+export const hasPassword = (user: User): boolean => {
+	return user.password_changed_at !== null
 }

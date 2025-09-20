@@ -15,6 +15,7 @@ type PasswordResetRepository interface {
 	MarkPasswordResetAsUsed(ctx context.Context, id int64) error
 	DeleteUnusedPasswordResets(ctx context.Context, userID int64) error
 	GetUnusedPasswordResets(ctx context.Context, userID int64) ([]domain.PasswordReset, error)
+	IncrementPasswordResetCounter(ctx context.Context, id int64) error
 }
 
 type passwordResetRepository struct {
@@ -80,4 +81,8 @@ func (r *passwordResetRepository) toDomain(dbReset db.PasswordReset) *domain.Pas
 		CreatedAt:  dbReset.CreatedAt,
 		UsedAt:     dbReset.UsedAt,
 	}
+}
+
+func (r *passwordResetRepository) IncrementPasswordResetCounter(ctx context.Context, id int64) error {
+	return r.store.IncrementPasswordResetCounter(ctx, id)
 }

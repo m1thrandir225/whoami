@@ -142,6 +142,7 @@ func main() {
 		userRepository,
 		passwordSecurityService,
 		mailService,
+		config.FrontendURL,
 	)
 	auditService := services.NewAuditService(auditLogsRepository)
 	tokenBlacklist := security.NewTokenBlacklist(redisClient)

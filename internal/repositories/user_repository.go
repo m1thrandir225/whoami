@@ -19,6 +19,7 @@ type UserRepository interface {
 	DeactivateUser(ctx context.Context, id int64) error
 	ActivateUser(ctx context.Context, id int64) error
 	UpdateLastLogin(ctx context.Context, id int64) error
+	UpdateUserPassword(ctx context.Context, id int64, password string) error
 }
 
 type userRepository struct {
@@ -142,4 +143,11 @@ func (repo *userRepository) UpdateLastLogin(ctx context.Context, id int64) error
 
 func (repo *userRepository) MarkEmailVerified(ctx context.Context, id int64) error {
 	return repo.store.MarkEmailVerified(ctx, id)
+}
+
+func (repo *userRepository) UpdateUserPassword(ctx context.Context, id int64, password string) error {
+	return repo.store.UpdateUserPassword(ctx, db.UpdateUserPasswordParams{
+		ID:           id,
+		PasswordHash: password,
+	})
 }

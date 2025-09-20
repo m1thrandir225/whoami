@@ -198,14 +198,12 @@ migrate-up-docker: ## Apply migrations using Docker database
 migrate-down: ## Roll back migrations (e.g., make migrate-down steps=1)
 	@$(eval STEPS_ARG := $(if $(steps),$(steps),1))
 	@echo "Rolling back $(STEPS_ARG) DOWN migration(s) from $(MIGRATION_PATH)..."
-	@read -p "WARNING: Rolling back migrations. Are you sure? (y/N) " answer && [ $${answer:-N} = y ] || (echo "Aborted." && exit 1)
 	@$(MIGRATE) -path $(MIGRATION_PATH) -database "$(DB_URL)" -verbose down $(STEPS_ARG)
 
 .PHONY: migrate-down-docker
 migrate-down-docker: ## Roll back migrations using Docker database
 	@$(eval STEPS_ARG := $(if $(steps),$(steps),1))
 	@echo "Rolling back $(STEPS_ARG) DOWN migration(s) using Docker database..."
-	@read -p "WARNING: Rolling back migrations. Are you sure? (y/N) " answer && [ $${answer:-N} = y ] || (echo "Aborted." && exit 1)
 	@$(MIGRATE) -path $(MIGRATION_PATH) -database "$(DOCKER_DB_URL)" -verbose down $(STEPS_ARG)
 
 .PHONY: migrate-status

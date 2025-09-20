@@ -62,3 +62,12 @@ type resetRateLimitRequest struct {
 	IP     string `json:"ip"`
 	UserID int64  `json:"user_id"`
 }
+
+type setPasswordRequest struct {
+	Password string `json:"password" binding:"required"`
+}
+
+type verifyResetOTPRequest struct {
+	Token string `json:"token" binding:"required"`
+	OTP   string `json:"otp" binding:"required"`
+}

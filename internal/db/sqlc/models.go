@@ -131,7 +131,7 @@ type User struct {
 	Role              string     `json:"role"`
 	PrivacySettings   []byte     `json:"privacy_settings"`
 	LastLoginAt       *time.Time `json:"last_login_at"`
-	PasswordChangedAt time.Time  `json:"password_changed_at"`
+	PasswordChangedAt *time.Time `json:"password_changed_at"`
 	CreatedAt         time.Time  `json:"created_at"`
 	UpdatedAt         time.Time  `json:"updated_at"`
 }

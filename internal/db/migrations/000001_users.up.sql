@@ -12,7 +12,7 @@ CREATE TABLE users (
         "two_factor_enabled": false
     }'::JSONB NOT NULL,
     last_login_at TIMESTAMPTZ DEFAULT NULL,
-    password_changed_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    password_changed_at TIMESTAMPTZ DEFAULT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );

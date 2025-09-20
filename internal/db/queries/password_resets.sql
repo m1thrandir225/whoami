@@ -30,3 +30,8 @@ SELECT * FROM password_resets
 WHERE user_id = $1
 AND used_at IS NULL
 ORDER BY created_at DESC;
+
+-- name: IncrementPasswordResetCounter :exec
+UPDATE password_resets
+SET counter = counter + 1
+WHERE id = $1;

@@ -22,12 +22,16 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     const authStore = useAuthStore.getState()
     const isAuthenticated = authStore.isAuthenticated()
 
+    const publicRoutes = [
+      '/login',
+      '/register',
+      '/oauth-callback',
+      '/reset-password',
+      '/request-password-reset',
+    ]
+
     if (!isAuthenticated) {
-      if (
-        location.pathname !== '/login' &&
-        location.pathname !== '/register' &&
-        location.pathname !== '/oauth-callback'
-      ) {
+      if (!publicRoutes.includes(location.pathname)) {
         throw redirect({
           to: '/login',
           search: {

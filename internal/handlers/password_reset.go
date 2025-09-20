@@ -59,3 +59,21 @@ func (h *HTTPHandler) VerifyResetToken(ctx *gin.Context) {
 		"expires_at": reset.ExpiresAt,
 	})
 }
+
+func (h *HTTPHandler) VerifyResetOTP(ctx *gin.Context) {
+	var req verifyResetOTPRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	if err := h.passwordResetService.VerifyResetOTP(ctx, req.Token, req.OTP); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"valid":   true,
+		"message": "OTP verified successfully",
+	})
+}

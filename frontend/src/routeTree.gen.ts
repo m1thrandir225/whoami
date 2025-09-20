@@ -16,6 +16,8 @@ import { Route as PathlessLayoutSecurityRouteImport } from './routes/_pathlessLa
 import { Route as PathlessLayoutMeRouteImport } from './routes/_pathlessLayout/me'
 import { Route as PathlessLayoutDevicesRouteImport } from './routes/_pathlessLayout/devices'
 import { Route as PathlessLayoutAuditLogsRouteImport } from './routes/_pathlessLayout/audit-logs'
+import { Route as authResetPasswordRouteImport } from './routes/(auth)/reset-password'
+import { Route as authRequestPasswordResetRouteImport } from './routes/(auth)/request-password-reset'
 import { Route as authRegisterRouteImport } from './routes/(auth)/register'
 import { Route as authOauthCallbackRouteImport } from './routes/(auth)/oauth-callback'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
@@ -54,6 +56,17 @@ const PathlessLayoutAuditLogsRoute = PathlessLayoutAuditLogsRouteImport.update({
   path: '/audit-logs',
   getParentRoute: () => PathlessLayoutRouteRoute,
 } as any)
+const authResetPasswordRoute = authResetPasswordRouteImport.update({
+  id: '/(auth)/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const authRequestPasswordResetRoute =
+  authRequestPasswordResetRouteImport.update({
+    id: '/(auth)/request-password-reset',
+    path: '/request-password-reset',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const authRegisterRoute = authRegisterRouteImport.update({
   id: '/(auth)/register',
   path: '/register',
@@ -74,6 +87,8 @@ export interface FileRoutesByFullPath {
   '/login': typeof authLoginRoute
   '/oauth-callback': typeof authOauthCallbackRoute
   '/register': typeof authRegisterRoute
+  '/request-password-reset': typeof authRequestPasswordResetRoute
+  '/reset-password': typeof authResetPasswordRoute
   '/audit-logs': typeof PathlessLayoutAuditLogsRoute
   '/devices': typeof PathlessLayoutDevicesRoute
   '/me': typeof PathlessLayoutMeRoute
@@ -85,6 +100,8 @@ export interface FileRoutesByTo {
   '/login': typeof authLoginRoute
   '/oauth-callback': typeof authOauthCallbackRoute
   '/register': typeof authRegisterRoute
+  '/request-password-reset': typeof authRequestPasswordResetRoute
+  '/reset-password': typeof authResetPasswordRoute
   '/audit-logs': typeof PathlessLayoutAuditLogsRoute
   '/devices': typeof PathlessLayoutDevicesRoute
   '/me': typeof PathlessLayoutMeRoute
@@ -98,6 +115,8 @@ export interface FileRoutesById {
   '/(auth)/login': typeof authLoginRoute
   '/(auth)/oauth-callback': typeof authOauthCallbackRoute
   '/(auth)/register': typeof authRegisterRoute
+  '/(auth)/request-password-reset': typeof authRequestPasswordResetRoute
+  '/(auth)/reset-password': typeof authResetPasswordRoute
   '/_pathlessLayout/audit-logs': typeof PathlessLayoutAuditLogsRoute
   '/_pathlessLayout/devices': typeof PathlessLayoutDevicesRoute
   '/_pathlessLayout/me': typeof PathlessLayoutMeRoute
@@ -111,6 +130,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/oauth-callback'
     | '/register'
+    | '/request-password-reset'
+    | '/reset-password'
     | '/audit-logs'
     | '/devices'
     | '/me'
@@ -122,6 +143,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/oauth-callback'
     | '/register'
+    | '/request-password-reset'
+    | '/reset-password'
     | '/audit-logs'
     | '/devices'
     | '/me'
@@ -134,6 +157,8 @@ export interface FileRouteTypes {
     | '/(auth)/login'
     | '/(auth)/oauth-callback'
     | '/(auth)/register'
+    | '/(auth)/request-password-reset'
+    | '/(auth)/reset-password'
     | '/_pathlessLayout/audit-logs'
     | '/_pathlessLayout/devices'
     | '/_pathlessLayout/me'
@@ -147,6 +172,8 @@ export interface RootRouteChildren {
   authLoginRoute: typeof authLoginRoute
   authOauthCallbackRoute: typeof authOauthCallbackRoute
   authRegisterRoute: typeof authRegisterRoute
+  authRequestPasswordResetRoute: typeof authRequestPasswordResetRoute
+  authResetPasswordRoute: typeof authResetPasswordRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -200,6 +227,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PathlessLayoutAuditLogsRouteImport
       parentRoute: typeof PathlessLayoutRouteRoute
     }
+    '/(auth)/reset-password': {
+      id: '/(auth)/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof authResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(auth)/request-password-reset': {
+      id: '/(auth)/request-password-reset'
+      path: '/request-password-reset'
+      fullPath: '/request-password-reset'
+      preLoaderRoute: typeof authRequestPasswordResetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/(auth)/register': {
       id: '/(auth)/register'
       path: '/register'
@@ -250,6 +291,8 @@ const rootRouteChildren: RootRouteChildren = {
   authLoginRoute: authLoginRoute,
   authOauthCallbackRoute: authOauthCallbackRoute,
   authRegisterRoute: authRegisterRoute,
+  authRequestPasswordResetRoute: authRequestPasswordResetRoute,
+  authResetPasswordRoute: authResetPasswordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

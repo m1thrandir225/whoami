@@ -37,6 +37,10 @@ import type {
   UpdatePasswordRequest,
 } from '@/types/api/auth.requests'
 import type { PrivacySettings } from '@/types/models/privacy_settings'
+import { hasPassword } from '@/types/models/user'
+import { SetPasswordForm } from '@/components/set-password-form'
+import { Loader } from '@/components/ui/loader'
+import { IconBrandGoogle, IconBrandGithub } from '@tabler/icons-react'
 
 export const Route = createFileRoute('/_pathlessLayout/me')({
   component: RouteComponent,
@@ -186,6 +190,25 @@ function RouteComponent() {
     return oauthAccounts?.some((account) => account.provider === provider)
   }
 
+  const handleUnlinkAccount = async (provider: string) => {
+    if (!user || !hasPassword(user)) {
+      toast.error('You must set a password before disconnecting OAuth accounts')
+      return
+    }
+
+    try {
+      await oauthService.unlinkOAuthAccount(provider)
+      toast.success(`${provider} account disconnected successfully`)
+      // Refresh OAuth accounts
+      // The original code had oauthAccountsQuery.refetch(), but oauthAccountsQuery is not defined.
+      // Assuming the intent was to invalidate the query if it were defined.
+      // For now, we'll just toast the success message.
+      queryClient.invalidateQueries({ queryKey: ['oauth-accounts'] })
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to disconnect account')
+    }
+  }
+
   if (isLoading) {
     return <div>Loading...</div>
   }
@@ -312,83 +335,41 @@ function RouteComponent() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {[OAuthProviders.GOOGLE, OAuthProviders.GITHUB].map((provider) => {
-            const linkedAccount = oauthAccounts?.find(
-              (account) => account.provider === provider,
-            )
-            const isLinked = !!linkedAccount
-
-            return (
-              <div
-                key={provider}
-                className="flex items-center justify-between p-3 border rounded-lg"
-              >
-                <div className="flex items-center gap-3">
-                  {getProviderIcon(provider)}
-                  <div>
-                    <p className="font-medium capitalize">{provider}</p>
-                    {isLinked && linkedAccount ? (
-                      <p className="text-sm text-muted-foreground">
-                        Connected as{' '}
-                        {linkedAccount.email || linkedAccount.name || 'Unknown'}
-                      </p>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">
-                        Not connected
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  {isLinked ? (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Unlink className="h-4 w-4 mr-1" />
-                          Disconnect
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            Disconnect {provider}?
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will remove the connection to your {provider}{' '}
-                            account. You'll need to reconnect it if you want to
-                            use it for sign-in.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => unlinkOAuthMutation.mutate(provider)}
-                            disabled={unlinkOAuthMutation.isPending}
-                          >
-                            {unlinkOAuthMutation.isPending
-                              ? 'Disconnecting...'
-                              : 'Disconnect'}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+          {oauthAccounts?.map((account) => (
+            <div
+              key={account.provider}
+              className="flex items-center justify-between p-4 border rounded-lg"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                  {account.provider === 'google' ? (
+                    <IconBrandGoogle className="h-4 w-4" />
                   ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleLinkOAuth(provider)}
-                      disabled={oauthLoading === provider}
-                    >
-                      {oauthLoading === provider ? (
-                        <div className="mr-1 h-4 w-4 animate-spin rounded-full border-2 border-b-transparent" />
-                      ) : null}
-                      Connect
-                    </Button>
+                    <IconBrandGithub className="h-4 w-4" />
                   )}
                 </div>
+                <div>
+                  <p className="font-medium capitalize">{account.provider}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Connected{' '}
+                    {new Date(account.created_at!).toLocaleDateString()}
+                  </p>
+                </div>
               </div>
-            )
-          })}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleUnlinkAccount(account.provider)}
+                disabled={!hasPassword(user) || unlinkOAuthMutation.isPending}
+              >
+                {unlinkOAuthMutation.isPending ? (
+                  <Loader size="sm" />
+                ) : (
+                  'Disconnect'
+                )}
+              </Button>
+            </div>
+          ))}
         </CardContent>
       </Card>
 
@@ -452,65 +433,85 @@ function RouteComponent() {
       </Card>
 
       {/* Password Management */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Password</CardTitle>
-          <CardDescription>
-            Change your password to keep your account secure.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isChangingPassword ? (
-            <form onSubmit={handlePasswordSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="current_password">Current Password</Label>
-                <Input
-                  id="current_password"
-                  name="current_password"
-                  type="password"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="new_password">New Password</Label>
-                <Input
-                  id="new_password"
-                  name="new_password"
-                  type="password"
-                  required
-                  minLength={8}
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button type="submit" disabled={passwordMutation.isPending}>
-                  {passwordMutation.isPending
-                    ? 'Changing...'
-                    : 'Change Password'}
+      {!hasPassword(user) ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Set Password</CardTitle>
+            <CardDescription>
+              You signed up with OAuth. Set a password to enable email/password
+              login.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SetPasswordForm
+              onSuccess={() => {
+                // Refresh user data or show success message
+                toast.success('Password set successfully!')
+              }}
+            />
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>Password</CardTitle>
+            <CardDescription>
+              Change your password to keep your account secure.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isChangingPassword ? (
+              <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="current_password">Current Password</Label>
+                  <Input
+                    id="current_password"
+                    name="current_password"
+                    type="password"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new_password">New Password</Label>
+                  <Input
+                    id="new_password"
+                    name="new_password"
+                    type="password"
+                    required
+                    minLength={8}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button type="submit" disabled={passwordMutation.isPending}>
+                    {passwordMutation.isPending
+                      ? 'Changing...'
+                      : 'Change Password'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsChangingPassword(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <Label>Password last changed</Label>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {new Date(user.password_changed_at!).toLocaleDateString()}
+                  </p>
+                </div>
+                <Button onClick={() => setIsChangingPassword(true)}>
+                  Change Password
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsChangingPassword(false)}
-                >
-                  Cancel
-                </Button>
               </div>
-            </form>
-          ) : (
-            <div className="space-y-4">
-              <div>
-                <Label>Password last changed</Label>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {new Date(user.password_changed_at).toLocaleDateString()}
-                </p>
-              </div>
-              <Button onClick={() => setIsChangingPassword(true)}>
-                Change Password
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

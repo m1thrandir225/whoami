@@ -88,6 +88,7 @@ type Querier interface {
 	GetUserDevicesByUserID(ctx context.Context, userID int64) ([]UserDevice, error)
 	GetUserProfile(ctx context.Context, userID int64) (UserProfile, error)
 	GetUserWithProfile(ctx context.Context, id int64) (GetUserWithProfileRow, error)
+	IncrementPasswordResetCounter(ctx context.Context, id int64) error
 	MarkDeviceAsTrusted(ctx context.Context, arg MarkDeviceAsTrustedParams) (UserDevice, error)
 	MarkEmailVerificationAsUsed(ctx context.Context, id int64) error
 	MarkEmailVerified(ctx context.Context, id int64) error

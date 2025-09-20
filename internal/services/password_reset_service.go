@@ -16,6 +16,7 @@ import (
 type PasswordResetService interface {
 	RequestPasswordReset(ctx context.Context, email string) error
 	VerifyResetToken(ctx context.Context, token string) (*domain.PasswordReset, error)
+	VerifyResetOTP(ctx context.Context, token, otp string) error
 	ResetPassword(ctx context.Context, token string, newPassword string) error
 }
 
@@ -24,6 +25,7 @@ type passwordResetService struct {
 	userRepo                repositories.UserRepository
 	passwordSecurityService PasswordSecurityService
 	mailService             mail.MailService
+	frontendURL             string
 }
 
 func NewPasswordResetService(
@@ -31,12 +33,14 @@ func NewPasswordResetService(
 	userRepo repositories.UserRepository,
 	passwordSecurityService PasswordSecurityService,
 	mailService mail.MailService,
+	frontendURL string,
 ) PasswordResetService {
 	return &passwordResetService{
 		passwordResetRepo:       passwordResetRepo,
 		userRepo:                userRepo,
 		passwordSecurityService: passwordSecurityService,
 		mailService:             mailService,
+		frontendURL:             frontendURL,
 	}
 }
 func (s *passwordResetService) RequestPasswordReset(ctx context.Context, email string) error {
@@ -96,7 +100,60 @@ func (s *passwordResetService) VerifyResetToken(ctx context.Context, token strin
 		return nil, fmt.Errorf("reset token has already been used")
 	}
 
+	hotp, err := security.GenerateHOTP(reset.HotpSecret, uint64(reset.Counter))
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate HOTP: %v", err)
+	}
+
+	user, err := s.userRepo.GetUserByID(ctx, reset.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %v", err)
+	}
+
+	if err := s.sendOTPEmail(user.Email, hotp); err != nil {
+		return nil, fmt.Errorf("failed to send OTP mail: %v", err)
+	}
+
+	if err := s.passwordResetRepo.IncrementPasswordResetCounter(ctx, reset.ID); err != nil {
+		return nil, fmt.Errorf("failed to increment password reset counter: %v", err)
+	}
+
 	return reset, nil
+}
+
+func (s *passwordResetService) VerifyResetOTP(ctx context.Context, token, otp string) error {
+	// Get reset record
+	reset, err := s.passwordResetRepo.GetPasswordResetByToken(ctx, token)
+	if err != nil {
+		return fmt.Errorf("invalid or expired reset token")
+	}
+
+	// Check if token is expired
+	if time.Now().After(reset.ExpiresAt) {
+		return fmt.Errorf("reset token has expired")
+	}
+
+	// Check if already used
+	if reset.UsedAt != nil {
+		return fmt.Errorf("reset token has already been used")
+	}
+
+	// Verify OTP using HOTP
+	hotp, err := security.ValidateHOTP(reset.HotpSecret, otp, uint64(reset.Counter))
+	if err != nil {
+		return fmt.Errorf("failed to validate HOTP: %v", err)
+	}
+
+	if !hotp {
+		return fmt.Errorf("invalid OTP")
+	}
+
+	// Increment counter for next OTP (if needed)
+	if err := s.passwordResetRepo.IncrementPasswordResetCounter(ctx, reset.ID); err != nil {
+		return fmt.Errorf("failed to increment counter: %v", err)
+	}
+
+	return nil
 }
 
 func (s *passwordResetService) ResetPassword(ctx context.Context, token string, newPassword string) error {
@@ -136,8 +193,12 @@ func (s *passwordResetService) sendPasswordResetEmail(email, token string) error
 	return s.mailService.SendMail("whoami@sebastijanzindl.me", email, "Password Reset", s.buildPasswordResetEmailContent(token))
 }
 
+func (s *passwordResetService) sendOTPEmail(email, otp string) error {
+	return s.mailService.SendMail("whoami@sebastijanzindl.me", email, "Password Reset Verification Code", s.buildOTPEmailContent(otp))
+}
+
 func (s *passwordResetService) buildPasswordResetEmailContent(token string) string {
-	resetURL := fmt.Sprintf("%s/reset-password?token=%s", "", token)
+	resetURL := fmt.Sprintf("%s/reset-password?token=%s", s.frontendURL, token)
 
 	return fmt.Sprintf(`
 Password Reset Request
@@ -153,4 +214,21 @@ If you didn't request a password reset, you can safely ignore this email.
 Best regards,
 The Whoami Team
 `, resetURL)
+}
+
+func (s *passwordResetService) buildOTPEmailContent(otp string) string {
+	return fmt.Sprintf(`
+Password Reset Verification Code
+
+Your verification code is: %s
+
+Enter this code to continue with your password reset.
+
+This code will expire in 10 minutes.
+
+If you didn't request a password reset, you can safely ignore this email.
+
+Best regards,
+The Whoami Team
+`, otp)
 }
