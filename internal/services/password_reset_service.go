@@ -114,10 +114,6 @@ func (s *passwordResetService) VerifyResetToken(ctx context.Context, token strin
 		return nil, fmt.Errorf("failed to send OTP mail: %v", err)
 	}
 
-	if err := s.passwordResetRepo.IncrementPasswordResetCounter(ctx, reset.ID); err != nil {
-		return nil, fmt.Errorf("failed to increment password reset counter: %v", err)
-	}
-
 	return reset, nil
 }
 
@@ -148,7 +144,6 @@ func (s *passwordResetService) VerifyResetOTP(ctx context.Context, token, otp st
 		return fmt.Errorf("invalid OTP")
 	}
 
-	// Increment counter for next OTP (if needed)
 	if err := s.passwordResetRepo.IncrementPasswordResetCounter(ctx, reset.ID); err != nil {
 		return fmt.Errorf("failed to increment counter: %v", err)
 	}
