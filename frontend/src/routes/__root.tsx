@@ -1,24 +1,24 @@
+import { TanstackDevtools } from '@tanstack/react-devtools'
 import {
   Outlet,
   createRootRouteWithContext,
   redirect,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { TanstackDevtools } from '@tanstack/react-devtools'
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
-import type { QueryClient } from '@tanstack/react-query'
-import { useAuthStore } from '@/stores/auth'
-import { Toaster } from '@/components/ui/sonner'
 import { PageLoader } from '@/components/ui/loader'
+import { Toaster } from '@/components/ui/sonner'
+import { useAuthStore } from '@/stores/auth'
+import type { QueryClient } from '@tanstack/react-query'
 
 interface MyRouterContext {
   queryClient: QueryClient
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
-  beforeLoad: async () => {
+  beforeLoad: async ({ location }) => {
     const authStore = useAuthStore.getState()
     const isAuthenticated = authStore.isAuthenticated()
 
@@ -34,9 +34,6 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       if (!publicRoutes.includes(location.pathname)) {
         throw redirect({
           to: '/login',
-          search: {
-            redirect: location.href,
-          },
         })
       }
     }
@@ -46,18 +43,20 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     <>
       <Outlet />
       <Toaster />
-      <TanstackDevtools
-        config={{
-          position: 'bottom-left',
-        }}
-        plugins={[
-          {
-            name: 'Tanstack Router',
-            render: <TanStackRouterDevtoolsPanel />,
-          },
-          TanStackQueryDevtools,
-        ]}
-      />
+      {process.env.NODE_ENV === 'development' && (
+        <TanstackDevtools
+          config={{
+            position: 'bottom-left',
+          }}
+          plugins={[
+            {
+              name: 'Tanstack Router',
+              render: <TanStackRouterDevtoolsPanel />,
+            },
+            TanStackQueryDevtools,
+          ]}
+        />
+      )}
     </>
   ),
 })

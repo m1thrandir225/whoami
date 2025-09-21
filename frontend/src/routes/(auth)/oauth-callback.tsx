@@ -1,8 +1,8 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
 import oauthService from '@/services/oauth.service'
-import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useEffect } from 'react'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/(auth)/oauth-callback')({
   component: OAuthCallbackComponent,
@@ -11,7 +11,6 @@ export const Route = createFileRoute('/(auth)/oauth-callback')({
 function OAuthCallbackComponent() {
   const navigate = useNavigate()
   const authStore = useAuthStore()
-  const [error, setError] = useState<string | null>(null)
   useEffect(() => {
     const handleOAuthCallback = async () => {
       try {
@@ -46,7 +45,6 @@ function OAuthCallbackComponent() {
           }
 
           toast.error(errorMessage)
-          setError(errorMessage)
 
           // Close popup after delay
           setTimeout(() => {
@@ -113,7 +111,6 @@ function OAuthCallbackComponent() {
       } catch (error) {
         console.error('OAuth callback error:', error)
         toast.error('Failed to complete OAuth authentication')
-        setError('Failed to complete OAuth authentication')
 
         setTimeout(() => {
           if (window.opener) {
@@ -127,38 +124,6 @@ function OAuthCallbackComponent() {
 
     handleOAuthCallback()
   }, [navigate])
-
-  const exchangeTokenForAuthData = async (
-    tempToken: string,
-    isLinking: boolean,
-  ) => {
-    try {
-      const authData = await oauthService.exchangeTempToken(tempToken)
-
-      // Send auth data to parent window
-      if (window.opener) {
-        window.opener.postMessage(
-          {
-            type: isLinking ? 'OAUTH_LINK_SUCCESS' : 'OAUTH_SUCCESS',
-            authData,
-          },
-          window.location.origin,
-        )
-      }
-      window.close()
-    } catch (error: any) {
-      if (window.opener) {
-        window.opener.postMessage(
-          {
-            type: 'OAUTH_ERROR',
-            error: error.message || 'Failed to exchange token',
-          },
-          window.location.origin,
-        )
-      }
-      window.close()
-    }
-  }
 
   return (
     <div className="flex items-center justify-center min-h-screen">

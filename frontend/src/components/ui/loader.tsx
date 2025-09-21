@@ -1,6 +1,5 @@
-import React from 'react'
-import { IconLoader } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
+import { IconLoader } from '@tabler/icons-react'
 
 interface LoaderProps {
   size?: 'sm' | 'md' | 'lg' | 'xl'

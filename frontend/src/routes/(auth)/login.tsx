@@ -3,13 +3,19 @@ import { Logo } from '@/components/ui/logo'
 import authService from '@/services/auth.service'
 import { useAuthStore } from '@/stores/auth'
 import type { LoginRequest } from '@/types/api/auth.requests'
-import { IconZoom } from '@tabler/icons-react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
 
 export const Route = createFileRoute('/(auth)/login')({
   component: RouteComponent,
+  head: () => ({
+    meta: [
+      {
+        title: 'whoami - Login',
+      },
+    ],
+  }),
 })
 
 function RouteComponent() {
@@ -20,6 +26,7 @@ function RouteComponent() {
     mutationFn: (values: LoginRequest) => authService.login(values),
     onSuccess: (data) => {
       authStore.login(data)
+
       navigate({ to: '/' })
     },
     onError: (error) => {

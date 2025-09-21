@@ -2,6 +2,8 @@ services:
   whoami-db:
     image: postgres:alpine
     container_name: whoami-db
+    networks:
+      - whoami-network
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -19,6 +21,8 @@ services:
   whoami-redis:
     image: redis:7-alpine
     container_name: whoami-redis
+    networks:
+      - whoami-network
     command: --port ${REDIS_PORT}
     ports:
       - "${REDIS_PORT}:${REDIS_PORT}"
@@ -34,6 +38,8 @@ services:
     build:
       context: ../
       dockerfile: deployment/migrate/Dockerfile
+    networks:
+      - whoami-network
     depends_on:
       whoami-db:
         condition: service_healthy
@@ -47,6 +53,8 @@ services:
       context: ../
       dockerfile: deployment/whoami/Dockerfile
     container_name: whoami
+    networks:
+      - whoami-network
     depends_on:
       whoami-db:
         condition: service_healthy
@@ -86,7 +94,34 @@ services:
     volumes:
       - ../deployment/certs:/certs:ro
       - whoami-exports:/app/exports
+
+  whoami-frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../deployment/frontend/Dockerfile
+      args:
+        VITE_BACKEND_URL: ${VITE_BACKEND_URL}
+        VITE_BACKEND_API_VERSION: ${VITE_BACKEND_API_VERSION}
+    container_name: whoami-frontend
+    depends_on:
+      - whoami
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../deployment/certs:/etc/nginx/ssl:ro
+      - ../deployment/frontend/default.conf:/etc/nginx/conf.d/default.conf
+      - ../deployment/frontend/nginx.conf:/etc/nginx/nginx.conf
+      - nginx-logs:/var/log/nginx
+    restart: unless-stopped
+    networks:
+      - whoami-network
 volumes:
   whoami-db:
   whoami-redis:
   whoami-exports:
+  nginx-logs:
+
+networks:
+  whoami-network:
+    driver: bridge

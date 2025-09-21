@@ -1,19 +1,11 @@
 'use client'
 
-import {
-  BadgeCheck,
-  Bell,
-  ChevronsUpDown,
-  CreditCard,
-  LogOut,
-  Sparkles,
-} from 'lucide-react'
+import { ChevronsUpDown, LogOut } from 'lucide-react'
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -25,12 +17,12 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
-import { useAuthStore } from '@/stores/auth'
-import { useMutation } from '@tanstack/react-query'
 import authService from '@/services/auth.service'
-import { toast } from 'sonner'
+import { useAuthStore } from '@/stores/auth'
 import { IconLoader } from '@tabler/icons-react'
+import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
+import { toast } from 'sonner'
 
 export function NavUser() {
   const { isMobile } = useSidebar()

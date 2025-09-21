@@ -1,11 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Card,
   CardContent,
@@ -13,17 +7,23 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Loader } from '@/components/ui/loader'
+import passwordResetService from '@/services/password-reset.service'
+import { zodResolver } from '@hookform/resolvers/zod'
 import {
-  IconLock,
   IconEye,
   IconEyeOff,
-  IconShield,
+  IconLock,
   IconMail,
+  IconShield,
 } from '@tabler/icons-react'
-import passwordResetService from '@/services/password-reset.service'
+import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { z } from 'zod'
 
 const resetPasswordSchema = z
   .object({
@@ -60,7 +60,6 @@ function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [token, setToken] = useState<string | null>(null)
-  const [otpSent, setOtpSent] = useState(false)
   const [canResend, setCanResend] = useState(true)
   const [resendCooldown, setResendCooldown] = useState(0)
 
@@ -96,7 +95,6 @@ function ResetPasswordPage() {
 
     try {
       await passwordResetService.verifyPassword({ token })
-      setOtpSent(true)
       setStep('verify-otp')
       toast.success('Verification code sent to your email')
     } catch (err: any) {

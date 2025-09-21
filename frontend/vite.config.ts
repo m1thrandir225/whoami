@@ -11,6 +11,9 @@ const certDir = process.env.VITE_CERT_DIR
 	? process.env.VITE_CERT_DIR
 	: path.resolve(__dirname, '../deployment/certs')
 
+const isDockerBuild =
+	process.env.NODE_ENV === 'production' || process.env.DOCKER_BUILD === 'true'
+
 // https://vitejs.dev/config/
 export default defineConfig({
 	plugins: [
@@ -18,16 +21,18 @@ export default defineConfig({
 		viteReact(),
 		tailwindcss(),
 	],
-	test: {
-		globals: true,
-		environment: 'jsdom',
-	},
+
 	server: {
 		port: 5173,
-		https: {
-			key: fs.readFileSync(path.join(certDir, 'localhost-key.pem')),
-			cert: fs.readFileSync(path.join(certDir, 'localhost-cert.pem')),
-		},
+		// Only use HTTPS in development, not in Docker build
+		...(isDockerBuild
+			? {}
+			: {
+					https: {
+						key: fs.readFileSync(path.join(certDir, 'localhost-key.pem')),
+						cert: fs.readFileSync(path.join(certDir, 'localhost-cert.pem')),
+					},
+				}),
 	},
 
 	resolve: {

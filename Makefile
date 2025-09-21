@@ -238,5 +238,19 @@ help: ## Display this help screen
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-25s\033[0m %s\n", $$1, $$2}'
 
+.PHONY: generate-ssl-certs
+generate-ssl-certs: ## Generate SSL certificates for local development
+	@echo "🔐 Generating SSL certificates for local development..."
+	@mkdir -p deployment/certs
+	@if [ ! -f deployment/certs/localhost-key.pem ]; then \
+		openssl req -x509 -newkey rsa:4096 -keyout deployment/certs/localhost-key.pem \
+		-out deployment/certs/localhost-cert.pem -days 365 -nodes \
+		-subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"; \
+		echo "✅ SSL certificates generated successfully"; \
+	else \
+		echo "✅ SSL certificates already exist"; \
+	fi
+
+
 # Default target
 .DEFAULT_GOAL := help

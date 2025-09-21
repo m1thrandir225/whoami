@@ -1,5 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { SetPasswordForm } from '@/components/set-password-form'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -7,50 +8,42 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
+import { Loader, PageLoader } from '@/components/ui/loader'
 import { Separator } from '@/components/ui/separator'
-import { Badge } from '@/components/ui/badge'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
-import { useMemo, useState } from 'react'
-import { toast } from 'sonner'
-import { Github, Unlink } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
 import authService from '@/services/auth.service'
-import userService from '@/services/user.service'
 import oauthService from '@/services/oauth.service'
-import { oauthManager } from '@/lib/oauth'
-import { OAuthProviders } from '@/types/models/oauth_account'
+import userService from '@/services/user.service'
 import type {
-  UpdateUserRequest,
   UpdatePasswordRequest,
+  UpdateUserRequest,
 } from '@/types/api/auth.requests'
 import type { PrivacySettings } from '@/types/models/privacy_settings'
 import { hasPassword } from '@/types/models/user'
-import { SetPasswordForm } from '@/components/set-password-form'
-import { Loader } from '@/components/ui/loader'
-import { IconBrandGoogle, IconBrandGithub } from '@tabler/icons-react'
+import { IconBrandGithub, IconBrandGoogle } from '@tabler/icons-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/_pathlessLayout/me')({
   component: RouteComponent,
+  head: () => ({
+    meta: [
+      {
+        title: 'whoami - Me',
+      },
+    ],
+  }),
+  pendingComponent: () => <PageLoader />,
 })
 
 function RouteComponent() {
   const queryClient = useQueryClient()
   const [isEditingProfile, setIsEditingProfile] = useState(false)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
-  const [oauthLoading, setOauthLoading] = useState<string | null>(null)
 
   // Get current user data
   const { data: user, isLoading } = useQuery({

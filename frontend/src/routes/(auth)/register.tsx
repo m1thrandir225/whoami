@@ -9,6 +9,13 @@ import { toast } from 'sonner'
 
 export const Route = createFileRoute('/(auth)/register')({
   component: RouteComponent,
+  head: () => ({
+    meta: [
+      {
+        title: 'whoami - Register',
+      },
+    ],
+  }),
 })
 
 function RouteComponent() {

@@ -1,10 +1,5 @@
-import React, { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Card,
   CardContent,
@@ -12,13 +7,18 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Loader } from '@/components/ui/loader'
-import { IconLock, IconEye, IconEyeOff } from '@tabler/icons-react'
 import userService from '@/services/user.service'
 import { useAuthStore } from '@/stores/auth'
-import { toast } from 'sonner'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { IconEye, IconEyeOff, IconLock } from '@tabler/icons-react'
 import { useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import { z } from 'zod'
 
 const setPasswordSchema = z
   .object({
@@ -48,7 +48,6 @@ export function SetPasswordForm({ onSuccess }: SetPasswordFormProps) {
     register,
     handleSubmit,
     formState: { errors },
-    watch,
   } = useForm<SetPasswordFormData>({
     resolver: zodResolver(setPasswordSchema),
   })

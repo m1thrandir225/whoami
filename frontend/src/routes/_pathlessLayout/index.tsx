@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { PageLoader } from '@/components/ui/loader'
 import auditService from '@/services/audit.service'
 import authService from '@/services/auth.service'
 import devicesService from '@/services/devices.service'
@@ -28,6 +29,14 @@ import {
 
 export const Route = createFileRoute('/_pathlessLayout/')({
   component: RouteComponent,
+  head: () => ({
+    meta: [
+      {
+        title: 'whoami - Dashboard',
+      },
+    ],
+  }),
+  pendingComponent: () => <PageLoader />,
 })
 
 function RouteComponent() {

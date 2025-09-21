@@ -1,11 +1,5 @@
-import React, { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Card,
   CardContent,
@@ -13,14 +7,20 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Loader } from '@/components/ui/loader'
-import { IconMail, IconArrowLeft, IconCheck } from '@tabler/icons-react'
 import passwordResetService from '@/services/password-reset.service'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { IconArrowLeft, IconCheck, IconMail } from '@tabler/icons-react'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { z } from 'zod'
 
 const requestPasswordResetSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
+  email: z.email(),
 })
 
 type RequestPasswordResetFormData = z.infer<typeof requestPasswordResetSchema>
@@ -30,7 +30,6 @@ export const Route = createFileRoute('/(auth)/request-password-reset')({
 })
 
 function RequestPasswordResetPage() {
-  const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
