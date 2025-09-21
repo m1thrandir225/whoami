@@ -120,7 +120,7 @@ func (s *passwordSecurityService) UpdatePassword(ctx context.Context, userID int
 	now := time.Now()
 	user.PasswordChangedAt = &now
 
-	if err := s.userRepo.UpdateUser(ctx, user); err != nil {
+	if err := s.userRepo.UpdateUserPassword(ctx, user); err != nil {
 		return fmt.Errorf("failed to update user password: %v", err)
 	}
 

@@ -182,7 +182,7 @@ type GetUserWithProfileRow struct {
 	FirstName       pgtype.Text `json:"first_name"`
 	LastName        pgtype.Text `json:"last_name"`
 	Phone           pgtype.Text `json:"phone"`
-	Bio             string      `json:"bio"`
+	Bio             pgtype.Text `json:"bio"`
 }
 
 func (q *Queries) GetUserWithProfile(ctx context.Context, id int64) (GetUserWithProfileRow, error) {

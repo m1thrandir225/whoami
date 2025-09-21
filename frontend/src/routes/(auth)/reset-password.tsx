@@ -61,6 +61,8 @@ function ResetPasswordPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [token, setToken] = useState<string | null>(null)
   const [otpSent, setOtpSent] = useState(false)
+  const [canResend, setCanResend] = useState(true)
+  const [resendCooldown, setResendCooldown] = useState(0)
 
   const otpForm = useForm<OTPFormData>({
     resolver: zodResolver(otpSchema),
@@ -71,12 +73,22 @@ function ResetPasswordPage() {
   })
 
   useEffect(() => {
-    // Check if token is provided in URL
     if (search.token) {
       setToken(search.token)
       verifyToken(search.token)
     }
   }, [search.token])
+
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => {
+        setResendCooldown(resendCooldown - 1)
+      }, 1000)
+      return () => clearTimeout(timer)
+    } else {
+      setCanResend(true)
+    }
+  }, [resendCooldown])
 
   const verifyToken = async (token: string) => {
     setIsLoading(true)
@@ -133,7 +145,7 @@ function ResetPasswordPage() {
   }
 
   const resendOTP = async () => {
-    if (!token) return
+    if (!token || !canResend) return
 
     setIsLoading(true)
     setError(null)
@@ -141,6 +153,9 @@ function ResetPasswordPage() {
     try {
       await passwordResetService.verifyPassword({ token })
       toast.success('New verification code sent to your email')
+
+      setCanResend(false)
+      setResendCooldown(60)
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to resend code')
     } finally {
@@ -245,10 +260,12 @@ function ResetPasswordPage() {
                   type="button"
                   variant="link"
                   onClick={resendOTP}
-                  disabled={isLoading}
+                  disabled={isLoading || !canResend}
                   className="text-sm"
                 >
-                  Didn't receive the code? Resend
+                  {!canResend
+                    ? `Resend in ${resendCooldown}s`
+                    : "Didn't receive the code? Resend"}
                 </Button>
               </div>
             </form>

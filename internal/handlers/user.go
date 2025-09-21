@@ -598,11 +598,6 @@ func (h *HTTPHandler) SetPassword(ctx *gin.Context) {
 		return
 	}
 
-	if err := h.passwordSecurityService.ValidateNewUserPassword(ctx, req.Password); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
 	if err := h.passwordSecurityService.UpdatePassword(ctx, payload.UserID, req.Password); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return

@@ -27,7 +27,7 @@ type AuditLog struct {
 	ResourceType pgtype.Text `json:"resource_type"`
 	ResourceID   pgtype.Int8 `json:"resource_id"`
 	IpAddress    *netip.Addr `json:"ip_address"`
-	UserAgent    string      `json:"user_agent"`
+	UserAgent    *string     `json:"user_agent"`
 	Details      []byte      `json:"details"`
 	CreatedAt    *time.Time  `json:"created_at"`
 }
@@ -58,7 +58,7 @@ type LoginAttempt struct {
 	UserID        pgtype.Int8 `json:"user_id"`
 	Email         string      `json:"email"`
 	IpAddress     netip.Addr  `json:"ip_address"`
-	UserAgent     string      `json:"user_agent"`
+	UserAgent     *string     `json:"user_agent"`
 	Success       bool        `json:"success"`
 	FailureReason pgtype.Text `json:"failure_reason"`
 	CreatedAt     *time.Time  `json:"created_at"`
@@ -72,8 +72,8 @@ type OauthAccount struct {
 	Email          pgtype.Text `json:"email"`
 	Name           pgtype.Text `json:"name"`
 	AvatarUrl      pgtype.Text `json:"avatar_url"`
-	AccessToken    string      `json:"access_token"`
-	RefreshToken   string      `json:"refresh_token"`
+	AccessToken    pgtype.Text `json:"access_token"`
+	RefreshToken   pgtype.Text `json:"refresh_token"`
 	TokenExpiresAt *time.Time  `json:"token_expires_at"`
 	CreatedAt      *time.Time  `json:"created_at"`
 	UpdatedAt      *time.Time  `json:"updated_at"`
@@ -113,8 +113,8 @@ type SuspiciousActivity struct {
 	UserID       pgtype.Int8 `json:"user_id"`
 	ActivityType string      `json:"activity_type"`
 	IpAddress    netip.Addr  `json:"ip_address"`
-	UserAgent    string      `json:"user_agent"`
-	Description  string      `json:"description"`
+	UserAgent    *string     `json:"user_agent"`
+	Description  pgtype.Text `json:"description"`
 	Metadata     []byte      `json:"metadata"`
 	Severity     pgtype.Text `json:"severity"`
 	Resolved     pgtype.Bool `json:"resolved"`
@@ -142,7 +142,7 @@ type UserDevice struct {
 	DeviceID   string      `json:"device_id"`
 	DeviceName pgtype.Text `json:"device_name"`
 	DeviceType pgtype.Text `json:"device_type"`
-	UserAgent  string      `json:"user_agent"`
+	UserAgent  *string     `json:"user_agent"`
 	IpAddress  *netip.Addr `json:"ip_address"`
 	Trusted    pgtype.Bool `json:"trusted"`
 	LastUsedAt *time.Time  `json:"last_used_at"`

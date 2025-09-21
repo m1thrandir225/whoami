@@ -1,18 +1,29 @@
 import RegisterForm from '@/components/register-form'
 import { Logo } from '@/components/ui/logo'
 import authService from '@/services/auth.service'
+import { useAuthStore } from '@/stores/auth'
 import type { RegisterRequest } from '@/types/api/auth.requests'
 import { useMutation } from '@tanstack/react-query'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/(auth)/register')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
+  const authStore = useAuthStore()
+  const navigate = useNavigate()
   const { mutateAsync, status } = useMutation({
     mutationKey: ['register'],
     mutationFn: (values: RegisterRequest) => authService.register(values),
+    onSuccess: (data) => {
+      authStore.login(data)
+      navigate({ to: '/' })
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    },
   })
 
   return (

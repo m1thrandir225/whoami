@@ -9,6 +9,7 @@ import (
 
 	"github.com/m1thrandir225/whoami/internal/domain"
 	"github.com/m1thrandir225/whoami/internal/repositories"
+	"github.com/m1thrandir225/whoami/internal/util"
 )
 
 type OAuthService interface {
@@ -157,9 +158,20 @@ func (s *oauthService) AuthenticateWithOAuth(ctx context.Context, provider, prov
 	}
 
 	// No existing user found, create new user with email verified
+	// Generate a unique username
+	baseName := ""
+	if userInfo.Name != nil {
+		baseName = *userInfo.Name
+	}
+
+	username := util.GenerateUniqueUsername(baseName, func(username string) bool {
+		available, err := s.userRepo.IsUsernameAvailable(ctx, username)
+		return err == nil && available
+	})
+
 	user, err := s.userRepo.CreateUser(ctx, domain.CreateUserAction{
 		Email:           *userInfo.Email,
-		Username:        userInfo.Name,             // Use Name as username
+		Username:        &username,
 		PrivacySettings: &domain.PrivacySettings{}, // Default privacy settings
 		Password:        "",                        // OAuth users don't need password
 	})

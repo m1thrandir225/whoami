@@ -58,11 +58,6 @@ func (r *auditLogsRepository) CreateAuditLog(ctx context.Context, req domain.Cre
 		ipAddress = parsedIP
 	}
 
-	userAgent := ""
-	if req.UserAgent != nil {
-		userAgent = *req.UserAgent
-	}
-
 	var details []byte
 	if req.Details != nil {
 		details = req.Details
@@ -74,7 +69,7 @@ func (r *auditLogsRepository) CreateAuditLog(ctx context.Context, req domain.Cre
 		ResourceType: pgResourceType,
 		ResourceID:   pgResourceID,
 		IpAddress:    &ipAddress,
-		UserAgent:    userAgent,
+		UserAgent:    req.UserAgent,
 		Details:      details,
 	})
 	if err != nil {
@@ -232,11 +227,6 @@ func (r *auditLogsRepository) toDomain(dbLog db.AuditLog) *domain.AuditLog {
 		ipAddress = dbLog.IpAddress.String()
 	}
 
-	var userAgent *string
-	if dbLog.UserAgent != "" {
-		userAgent = &dbLog.UserAgent
-	}
-
 	var details json.RawMessage
 	if len(dbLog.Details) > 0 {
 		details = dbLog.Details
@@ -249,7 +239,7 @@ func (r *auditLogsRepository) toDomain(dbLog db.AuditLog) *domain.AuditLog {
 		ResourceType: resourceType,
 		ResourceID:   resourceID,
 		IPAddress:    &ipAddress,
-		UserAgent:    userAgent,
+		UserAgent:    dbLog.UserAgent,
 		Details:      details,
 		CreatedAt:    dbLog.CreatedAt,
 	}

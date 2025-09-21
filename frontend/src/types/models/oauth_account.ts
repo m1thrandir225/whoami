@@ -14,8 +14,6 @@ export type OAuthAccount = {
 export const OAuthProviders = {
 	GOOGLE: 'google',
 	GITHUB: 'github',
-	DISCORD: 'discord',
-	TWITTER: 'twitter',
 } as const
 
 export type OAuthProvider = (typeof OAuthProviders)[keyof typeof OAuthProviders]

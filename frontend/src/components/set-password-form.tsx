@@ -18,6 +18,7 @@ import { IconLock, IconEye, IconEyeOff } from '@tabler/icons-react'
 import userService from '@/services/user.service'
 import { useAuthStore } from '@/stores/auth'
 import { toast } from 'sonner'
+import { useQueryClient } from '@tanstack/react-query'
 
 const setPasswordSchema = z
   .object({
@@ -42,7 +43,7 @@ export function SetPasswordForm({ onSuccess }: SetPasswordFormProps) {
   const [error, setError] = useState<string | null>(null)
 
   const { setUser } = useAuthStore()
-
+  const queryClient = useQueryClient()
   const {
     register,
     handleSubmit,
@@ -55,7 +56,6 @@ export function SetPasswordForm({ onSuccess }: SetPasswordFormProps) {
   const onSubmit = async (data: SetPasswordFormData) => {
     setIsLoading(true)
     setError(null)
-
     try {
       await userService.setPassword(data.password)
 
@@ -67,6 +67,8 @@ export function SetPasswordForm({ onSuccess }: SetPasswordFormProps) {
           password_changed_at: new Date().toISOString(),
         })
       }
+
+      queryClient.invalidateQueries({ queryKey: ['current-user'] })
 
       toast.success('Password set successfully!')
       onSuccess?.()

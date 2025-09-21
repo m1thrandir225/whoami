@@ -29,7 +29,7 @@ type CreateLoginAttemptParams struct {
 	UserID        pgtype.Int8 `json:"user_id"`
 	Email         string      `json:"email"`
 	IpAddress     netip.Addr  `json:"ip_address"`
-	UserAgent     string      `json:"user_agent"`
+	UserAgent     *string     `json:"user_agent"`
 	Success       bool        `json:"success"`
 	FailureReason pgtype.Text `json:"failure_reason"`
 }

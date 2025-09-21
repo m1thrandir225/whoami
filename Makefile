@@ -195,15 +195,15 @@ migrate-up-docker: ## Apply migrations using Docker database
 	@$(MIGRATE) -path $(MIGRATION_PATH) -database "$(DOCKER_DB_URL)" -verbose up $(steps)
 
 .PHONY: migrate-down
-migrate-down: ## Roll back migrations (e.g., make migrate-down steps=1)
-	@$(eval STEPS_ARG := $(if $(steps),$(steps),1))
-	@echo "Rolling back $(STEPS_ARG) DOWN migration(s) from $(MIGRATION_PATH)..."
+migrate-down: ## Roll back all migrations (e.g., make migrate-down steps=1 to roll back only 1)
+	@$(eval STEPS_ARG := $(if $(steps),$(steps),))
+	@echo "Rolling back $(if $(steps),$(steps),all) DOWN migration(s) from $(MIGRATION_PATH)..."
 	@$(MIGRATE) -path $(MIGRATION_PATH) -database "$(DB_URL)" -verbose down $(STEPS_ARG)
 
 .PHONY: migrate-down-docker
-migrate-down-docker: ## Roll back migrations using Docker database
-	@$(eval STEPS_ARG := $(if $(steps),$(steps),1))
-	@echo "Rolling back $(STEPS_ARG) DOWN migration(s) using Docker database..."
+migrate-down-docker: ## Roll back all migrations using Docker database
+	@$(eval STEPS_ARG := $(if $(steps),$(steps),))
+	@echo "Rolling back $(if $(steps),$(steps),all) DOWN migration(s) using Docker database..."
 	@$(MIGRATE) -path $(MIGRATION_PATH) -database "$(DOCKER_DB_URL)" -verbose down $(STEPS_ARG)
 
 .PHONY: migrate-status

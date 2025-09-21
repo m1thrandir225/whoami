@@ -63,7 +63,7 @@ func (r *userDevicesRepository) CreateUserDevice(ctx context.Context, req domain
 		DeviceID:   req.DeviceID,
 		DeviceName: deviceName,
 		DeviceType: deviceType,
-		UserAgent:  req.UserAgent,
+		UserAgent:  &req.UserAgent,
 		IpAddress:  &parsedIP,
 		Trusted:    trusted,
 	})
@@ -158,7 +158,7 @@ func (r *userDevicesRepository) UpdateUserDevice(ctx context.Context, req domain
 		UserID:     req.UserID,
 		DeviceName: deviceName,
 		DeviceType: deviceType,
-		UserAgent:  req.UserAgent,
+		UserAgent:  &req.UserAgent,
 		Trusted:    trusted,
 	})
 	if err != nil {
@@ -191,7 +191,7 @@ func (r *userDevicesRepository) toDomain(dbDevice db.UserDevice) *domain.UserDev
 		DeviceID:   dbDevice.DeviceID,
 		DeviceName: dbDevice.DeviceName.String,
 		DeviceType: dbDevice.DeviceType.String,
-		UserAgent:  dbDevice.UserAgent,
+		UserAgent:  *dbDevice.UserAgent,
 		IPAddress:  dbDevice.IpAddress.String(),
 		Trusted:    dbDevice.Trusted.Bool,
 		LastUsedAt: *dbDevice.LastUsedAt,

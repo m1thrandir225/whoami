@@ -35,8 +35,8 @@ type CreateOAuthAccountParams struct {
 	Email          pgtype.Text `json:"email"`
 	Name           pgtype.Text `json:"name"`
 	AvatarUrl      pgtype.Text `json:"avatar_url"`
-	AccessToken    string      `json:"access_token"`
-	RefreshToken   string      `json:"refresh_token"`
+	AccessToken    pgtype.Text `json:"access_token"`
+	RefreshToken   pgtype.Text `json:"refresh_token"`
 	TokenExpiresAt *time.Time  `json:"token_expires_at"`
 }
 
@@ -248,8 +248,8 @@ type UpdateOAuthAccountParams struct {
 	Email          pgtype.Text `json:"email"`
 	Name           pgtype.Text `json:"name"`
 	AvatarUrl      pgtype.Text `json:"avatar_url"`
-	AccessToken    string      `json:"access_token"`
-	RefreshToken   string      `json:"refresh_token"`
+	AccessToken    pgtype.Text `json:"access_token"`
+	RefreshToken   pgtype.Text `json:"refresh_token"`
 	TokenExpiresAt *time.Time  `json:"token_expires_at"`
 }
 
@@ -293,11 +293,11 @@ RETURNING id, user_id, provider, provider_user_id, email, name, avatar_url, acce
 `
 
 type UpdateOAuthTokensParams struct {
-	ID             int64      `json:"id"`
-	UserID         int64      `json:"user_id"`
-	AccessToken    string     `json:"access_token"`
-	RefreshToken   string     `json:"refresh_token"`
-	TokenExpiresAt *time.Time `json:"token_expires_at"`
+	ID             int64       `json:"id"`
+	UserID         int64       `json:"user_id"`
+	AccessToken    pgtype.Text `json:"access_token"`
+	RefreshToken   pgtype.Text `json:"refresh_token"`
+	TokenExpiresAt *time.Time  `json:"token_expires_at"`
 }
 
 func (q *Queries) UpdateOAuthTokens(ctx context.Context, arg UpdateOAuthTokensParams) (OauthAccount, error) {

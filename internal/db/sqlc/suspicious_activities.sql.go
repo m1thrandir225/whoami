@@ -30,8 +30,8 @@ type CreateSuspiciousActivityParams struct {
 	UserID       pgtype.Int8 `json:"user_id"`
 	ActivityType string      `json:"activity_type"`
 	IpAddress    netip.Addr  `json:"ip_address"`
-	UserAgent    string      `json:"user_agent"`
-	Description  string      `json:"description"`
+	UserAgent    *string     `json:"user_agent"`
+	Description  pgtype.Text `json:"description"`
 	Metadata     []byte      `json:"metadata"`
 	Severity     pgtype.Text `json:"severity"`
 }

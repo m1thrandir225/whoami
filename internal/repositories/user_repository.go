@@ -13,13 +13,15 @@ type UserRepository interface {
 	CreateUser(ctx context.Context, req domain.CreateUserAction) (*domain.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*domain.User, error)
 	GetUserByID(ctx context.Context, id int64) (*domain.User, error)
+	GetUserByUsername(ctx context.Context, username string) (*domain.User, error)
+	IsUsernameAvailable(ctx context.Context, username string) (bool, error)
 	UpdateUser(ctx context.Context, user *domain.User) error
 	MarkEmailVerified(ctx context.Context, id int64) error
 	UpdateUserPrivacySettings(ctx context.Context, id int64, privacySettings domain.PrivacySettings) error
 	DeactivateUser(ctx context.Context, id int64) error
 	ActivateUser(ctx context.Context, id int64) error
 	UpdateLastLogin(ctx context.Context, id int64) error
-	UpdateUserPassword(ctx context.Context, id int64, password string) error
+	UpdateUserPassword(ctx context.Context, user *domain.User) error
 }
 
 type userRepository struct {
@@ -109,6 +111,29 @@ func (repo *userRepository) GetUserByID(ctx context.Context, id int64) (*domain.
 	return repo.toDomain(user, privacySettings), nil
 }
 
+func (repo *userRepository) GetUserByUsername(ctx context.Context, username string) (*domain.User, error) {
+	user, err := repo.store.GetUserByUsername(ctx, username)
+	if err != nil {
+		return nil, err
+	}
+
+	var privacySettings domain.PrivacySettings
+	err = json.Unmarshal(user.PrivacySettings, &privacySettings)
+	if err != nil {
+		return nil, err
+	}
+
+	return repo.toDomain(user, privacySettings), nil
+}
+
+func (repo *userRepository) IsUsernameAvailable(ctx context.Context, username string) (bool, error) {
+	_, err := repo.store.GetUserByUsername(ctx, username)
+	if err != nil {
+		return true, nil
+	}
+	return false, nil
+}
+
 func (repo *userRepository) UpdateUser(ctx context.Context, user *domain.User) error {
 	return repo.store.UpdateUser(ctx, db.UpdateUserParams{
 		ID:       user.ID,
@@ -145,9 +170,9 @@ func (repo *userRepository) MarkEmailVerified(ctx context.Context, id int64) err
 	return repo.store.MarkEmailVerified(ctx, id)
 }
 
-func (repo *userRepository) UpdateUserPassword(ctx context.Context, id int64, password string) error {
+func (repo *userRepository) UpdateUserPassword(ctx context.Context, user *domain.User) error {
 	return repo.store.UpdateUserPassword(ctx, db.UpdateUserPasswordParams{
-		ID:           id,
-		PasswordHash: password,
+		ID:           user.ID,
+		PasswordHash: user.Password,
 	})
 }

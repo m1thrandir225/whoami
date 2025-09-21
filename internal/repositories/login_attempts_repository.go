@@ -44,11 +44,6 @@ func (r *loginAttemptsRepository) CreateLoginAttempt(ctx context.Context, req do
 		pgUserID = pgtype.Int8{Int64: *req.UserID, Valid: true}
 	}
 
-	var pgUserAgent pgtype.Text
-	if req.UserAgent != nil {
-		pgUserAgent = pgtype.Text{String: *req.UserAgent, Valid: true}
-	}
-
 	var pgFailureReason pgtype.Text
 	if req.FailureReason != nil {
 		pgFailureReason = pgtype.Text{String: *req.FailureReason, Valid: true}
@@ -58,7 +53,7 @@ func (r *loginAttemptsRepository) CreateLoginAttempt(ctx context.Context, req do
 		UserID:        pgUserID,
 		Email:         req.Email,
 		IpAddress:     parsedIP,
-		UserAgent:     pgUserAgent.String,
+		UserAgent:     req.UserAgent,
 		Success:       req.Success,
 		FailureReason: pgFailureReason,
 	})
@@ -238,11 +233,6 @@ func (r *loginAttemptsRepository) toDomain(dbAttempt db.LoginAttempt) *domain.Lo
 		userID = &dbAttempt.UserID.Int64
 	}
 
-	var userAgent *string
-	if dbAttempt.UserAgent != "" {
-		userAgent = &dbAttempt.UserAgent
-	}
-
 	var failureReason *string
 	if dbAttempt.FailureReason.Valid {
 		failureReason = &dbAttempt.FailureReason.String
@@ -253,7 +243,7 @@ func (r *loginAttemptsRepository) toDomain(dbAttempt db.LoginAttempt) *domain.Lo
 		UserID:        userID,
 		Email:         dbAttempt.Email,
 		IPAddress:     dbAttempt.IpAddress.String(),
-		UserAgent:     userAgent,
+		UserAgent:     dbAttempt.UserAgent,
 		Success:       dbAttempt.Success,
 		FailureReason: failureReason,
 		CreatedAt:     dbAttempt.CreatedAt,

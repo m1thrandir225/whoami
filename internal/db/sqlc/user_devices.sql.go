@@ -32,7 +32,7 @@ type CreateUserDeviceParams struct {
 	DeviceID   string      `json:"device_id"`
 	DeviceName pgtype.Text `json:"device_name"`
 	DeviceType pgtype.Text `json:"device_type"`
-	UserAgent  string      `json:"user_agent"`
+	UserAgent  *string     `json:"user_agent"`
 	IpAddress  *netip.Addr `json:"ip_address"`
 	Trusted    pgtype.Bool `json:"trusted"`
 }
@@ -227,7 +227,7 @@ type UpdateUserDeviceParams struct {
 	UserID     int64       `json:"user_id"`
 	DeviceName pgtype.Text `json:"device_name"`
 	DeviceType pgtype.Text `json:"device_type"`
-	UserAgent  string      `json:"user_agent"`
+	UserAgent  *string     `json:"user_agent"`
 	Trusted    pgtype.Bool `json:"trusted"`
 }
 

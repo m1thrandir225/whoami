@@ -33,7 +33,7 @@ type CreateAuditLogParams struct {
 	ResourceType pgtype.Text `json:"resource_type"`
 	ResourceID   pgtype.Int8 `json:"resource_id"`
 	IpAddress    *netip.Addr `json:"ip_address"`
-	UserAgent    string      `json:"user_agent"`
+	UserAgent    *string     `json:"user_agent"`
 	Details      []byte      `json:"details"`
 }
 

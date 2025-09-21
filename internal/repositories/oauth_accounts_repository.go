@@ -60,8 +60,8 @@ func (r *oauthAccountsRepository) CreateOAuthAccount(ctx context.Context, req do
 		Email:          email,
 		Name:           name,
 		AvatarUrl:      avatarURL,
-		AccessToken:    accessToken.String,
-		RefreshToken:   refreshToken.String,
+		AccessToken:    accessToken,
+		RefreshToken:   refreshToken,
 		TokenExpiresAt: &tokenExpiresAt.Time,
 	})
 	if err != nil {
@@ -155,8 +155,8 @@ func (r *oauthAccountsRepository) UpdateOAuthAccount(ctx context.Context, req do
 		Email:          email,
 		Name:           name,
 		AvatarUrl:      avatarURL,
-		AccessToken:    accessToken.String,
-		RefreshToken:   refreshToken.String,
+		AccessToken:    accessToken,
+		RefreshToken:   refreshToken,
 		TokenExpiresAt: &tokenExpiresAt.Time,
 	})
 	if err != nil {
@@ -197,8 +197,8 @@ func (r *oauthAccountsRepository) UpdateOAuthTokens(ctx context.Context, req dom
 	dbAccount, err := r.store.UpdateOAuthTokens(ctx, db.UpdateOAuthTokensParams{
 		ID:             req.ID,
 		UserID:         req.UserID,
-		AccessToken:    accessToken.String,
-		RefreshToken:   refreshToken.String,
+		AccessToken:    accessToken,
+		RefreshToken:   refreshToken,
 		TokenExpiresAt: &tokenExpiresAt.Time,
 	})
 	if err != nil {
@@ -227,8 +227,8 @@ func (r *oauthAccountsRepository) toDomain(dbAccount db.OauthAccount) *domain.OA
 	if dbAccount.AvatarUrl.Valid {
 		account.AvatarURL = &dbAccount.AvatarUrl.String
 	}
-	account.AccessToken = &dbAccount.AccessToken
-	account.RefreshToken = &dbAccount.RefreshToken
+	account.AccessToken = &dbAccount.AccessToken.String
+	account.RefreshToken = &dbAccount.RefreshToken.String
 	account.TokenExpiresAt = dbAccount.TokenExpiresAt
 
 	return account

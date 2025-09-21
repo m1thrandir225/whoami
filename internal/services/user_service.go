@@ -3,11 +3,9 @@ package services
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/m1thrandir225/whoami/internal/domain"
 	"github.com/m1thrandir225/whoami/internal/repositories"
-	"github.com/m1thrandir225/whoami/internal/util"
 )
 
 type UserService interface {
@@ -19,7 +17,6 @@ type UserService interface {
 	UpdateUser(ctx context.Context, user domain.User) error
 	UpdateUserPrivacySettings(ctx context.Context, id int64, privacySettings domain.PrivacySettings) error
 	UpdateLastLogin(ctx context.Context, id int64) error
-	UpdateUserPassword(ctx context.Context, id int64, password string) error
 }
 
 type userService struct {
@@ -63,13 +60,4 @@ func (s *userService) UpdateUserPrivacySettings(ctx context.Context, id int64, p
 
 func (s *userService) UpdateLastLogin(ctx context.Context, id int64) error {
 	return s.repository.UpdateLastLogin(ctx, id)
-}
-
-func (s *userService) UpdateUserPassword(ctx context.Context, id int64, password string) error {
-	hashedPassword, err := util.HashPassword(password)
-	if err != nil {
-		return fmt.Errorf("failed to hash password: %v", err)
-	}
-
-	return s.repository.UpdateUserPassword(ctx, id, hashedPassword)
 }
