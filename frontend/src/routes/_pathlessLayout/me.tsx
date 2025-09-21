@@ -381,7 +381,7 @@ function RouteComponent() {
       </Card>
 
       {/* Password Management */}
-      {!hasPassword(user) ? (
+      {!hasPassword(user) && oauthAccounts && oauthAccounts.length > 0 ? (
         <Card>
           <CardHeader>
             <CardTitle>Set Password</CardTitle>
